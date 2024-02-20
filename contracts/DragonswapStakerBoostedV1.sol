@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+ SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -60,14 +60,15 @@ contract DragonswapStakerBoosted is Ownable {
             return;
         }
         uint256 totalStaked = stakingToken.balanceOf(address(this));
-        if (totalStaked == 0) {
+        if (totalStaked == 0 && block.number <= endBlock) {
             lastRewardBlock = block.number;
             return;
         }
-        uint256 blocksElapsed = block.number - lastRewardBlock;
+        uint256 block = block.number > endBlock ? endBlock : block.number;
+        uint256 blocksElapsed = block - lastRewardBlock;
         uint256 unlockedReward = blocksElapsed * rewardPerBlock;
         accRewardsPerShare = accRewardsPerShare + unlockedReward * 1e12 / totalStaked;
-        lastRewardBlock = block.number;
+        lastRewardBlock = block;
     }
 
     function deposit(uint256 amount) external {
@@ -93,8 +94,10 @@ contract DragonswapStakerBoosted is Ownable {
         uint256 pending = user.amount * accRewardsPerShare / 1e12 - user.rewardDebt;
         rewardToken.safeTransfer(msg.sender, pending);
         user.rewardDebt += pending;
-        uint256 pendingBoosted = pending * boostRewardSupply / stakingToken.balanceOf(address(this));
-        safeTransferSei(msg.sender, pendingBoosted);
+        if (boostRewardSupply > 1e12) {
+            uint256 pendingBoosted = pending * boostRewardSupply / stakingToken.balanceOf(address(this));
+            safeTransferSei(msg.sender, pendingBoosted);
+        }
         emit Claim(msg.sender, pending, pendingBoosted);
     }
 
@@ -104,8 +107,10 @@ contract DragonswapStakerBoosted is Ownable {
         update();
         uint256 pending = user.amount * accRewardsPerShare / 1e12 - user.rewardDebt;
         rewardToken.safeTransfer(msg.sender, pending);
-        uint256 pendingBoosted = pending * boostRewardSupply / stakingToken.balanceOf(address(this));
-        safeTransferSei(msg.sender, pendingBoosted);
+        if (boostRewardSupply > 1e12) {
+            uint256 pendingBoosted = pending * boostRewardSupply / stakingToken.balanceOf(address(this));
+            safeTransferSei(msg.sender, pendingBoosted);
+        }
         user.amount = user.amount - amount;
         user.rewardDebt = user.amount * accRewardsPerShare / 1e12;
         stakingToken.safeTransfer(msg.sender, amount);
@@ -132,7 +137,11 @@ contract DragonswapStakerBoosted is Ownable {
     }
 
     function safeTransferSei(address to, uint256 amount) private {
-        (bool success, ) = to.call{value: amount}("");
-        if (!success) revert();
+        if (amount > 0) {
+            (bool success, ) = to.call{value: amount}("");
+            if (!success) revert();
+        }
     }
+
+    function receive() {}
 }
