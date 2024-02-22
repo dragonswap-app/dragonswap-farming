@@ -5,7 +5,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-error farmClosed();
+error FarmClosed();
+error UnauthorizedWithdrawal();
+
+interface IERC20Metadata {
+    function decimals() external view returns(uint8);
+}
 
 contract FarmingXava is Ownable {
     using SafeERC20 for IERC20;
@@ -26,13 +31,15 @@ contract FarmingXava is Ownable {
     IERC20 public immutable rewardToken;
     IERC20 public immutable boosterToken;
 
-    uint256 public immutable decimalEqReward;
-    uint256 public immutable decimalEqBoosted;
+    uint256 public decimalEqReward;
+    uint256 public decimalEqBooster;
 
     uint256 public totalRewards;
     uint256 public totalBooster;
     uint256 public rewardsPaidOut;
     uint256 public boosterPaidOut;
+
+    uint256 public ratio;
 
     uint256 public rewardPerSecond;
     uint256 public totalAllocPoint;
@@ -57,8 +64,8 @@ contract FarmingXava is Ownable {
         startTimestamp = _startTimestamp;
         endTimestamp = _startTimestamp;
 
-        uint8 rewardDecimals = _rewardToken.decimals();
-        uint8 boosterDecimals = _boosterToken.decimals();
+        uint8 rewardDecimals = IERC20Metadata(address(_rewardToken)).decimals();
+        uint8 boosterDecimals = IERC20Metadata(address(_boosterToken)).decimals();
 
         if (rewardDecimals > boosterDecimals) {
             decimalEqReward = 10 ^ (rewardDecimals - boosterDecimals);
@@ -75,7 +82,7 @@ contract FarmingXava is Ownable {
 
     // Fund the farm, increase the end block
     function fund(uint256 rewardAmount, uint256 boosterAmount) external {
-        if (block.timestamp >= endTimestamp) revert farmClosed();
+        if (block.timestamp >= endTimestamp) revert FarmClosed();
         // Transfer tokens optimistically and use allowance
         rewardToken.safeTransferFrom(msg.sender, address(this), rewardAmount);
         boosterToken.safeTransferFrom(msg.sender, address(this), boosterAmount);
@@ -86,7 +93,7 @@ contract FarmingXava is Ownable {
         // Compute ratio with 1e7 precision
         uint256 inputRatio = 1e7 * rewardAmount / boosterAmount;
         // Gas optimization
-        uint256 appliedRatio = boostRewardRatio;
+        uint256 appliedRatio = ratio;
         if (appliedRatio == 0) {
             appliedRatio = inputRatio;
         } else if (inputRatio > appliedRatio) {
@@ -98,8 +105,8 @@ contract FarmingXava is Ownable {
             boosterToken.safeTransfer(msg.sender, boosterAmountChange / decimalEqBooster );
             boosterAmount -= boosterAmountChange;
         }
-        rewardAmount /= decimalsEqReward;
-        boosterAmount /= decimalsEqBooster;
+        rewardAmount /= decimalEqReward;
+        boosterAmount /= decimalEqBooster;
         // We count in that rewardsPerSecond are aligned with rewardToken decimals
         endTimestamp += rewardAmount / rewardPerSecond;
         totalRewards += rewardAmount;
@@ -142,7 +149,7 @@ contract FarmingXava is Ownable {
     function pending(uint256 _pid, address _user) external view returns (uint256 pendingRewards, uint256 pendingBooster) {
         PoolInfo memory pool = poolInfo[_pid];
         UserInfo memory user = userInfo[_pid][_user];
-        uint256 accERC20PerShare = pool.accERC20PerShare;
+        uint256 accRewardsPerShare = pool.accRewardsPerShare;
 
         uint256 pooledTokens = pool.totalDeposits;
 
@@ -151,22 +158,22 @@ contract FarmingXava is Ownable {
             uint256 timestampToCompare = pool.lastRewardTimestamp < endTimestamp ? pool.lastRewardTimestamp : endTimestamp;
             uint256 timeElapsed = lastTimestamp - timestampToCompare;
             uint256 totalReward = timeElapsed * rewardPerSecond * pool.allocPoint / totalAllocPoint;
-            accERC20PerShare = accERC20PerShare + totalReward * 1e36 / pooledTokens;
+            accRewardsPerShare = accRewardsPerShare + totalReward * 1e36 / pooledTokens;
         }
-        pendingRewards = user.amount * accERC20PerShare / 1e36 - user.rewardDebt;
-        pendingBooster = pendingRewards * decimalEqReward * 1e7 / boostRewardRatio / decimalEqBooster;
+        pendingRewards = user.amount * accRewardsPerShare / 1e36 - user.rewardDebt;
+        pendingBooster = pendingRewards * decimalEqReward * 1e7 / ratio / decimalEqBooster;
     }
 
     // View function for total reward the farm has yet to pay out.
     function totalPending() external view returns (uint256 pendingRewards, uint256 pendingBooster) {
         if (block.timestamp <= startTimestamp) {
-            return 0;
+            return (0, 0);
         }
 
         uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
 
-        pendingRewards = rewardPerSecond * (lastTimestamp - startTimestamp) - paidOut;
-        pendingBooster = pendingRewards * decimalEqReward * 1e7 / boostRewardRatio / decimalEqBooster;
+        pendingRewards = rewardPerSecond * (lastTimestamp - startTimestamp) - rewardsPaidOut;
+        pendingBooster = pendingRewards * decimalEqReward * 1e7 / ratio / decimalEqBooster;
     }
 
     // Update reward variables for all pools. Be careful of gas spending!
@@ -208,10 +215,10 @@ contract FarmingXava is Ownable {
 
         if (user.amount > 0) {
             uint256 pendingRewards = user.amount * pool.accRewardsPerShare / 1e36 - user.rewardDebt;
-            uint256 pendingBooster = pendingRewards * decimalsEqReward * 1e7 / boostRewardRatio / decimalEqBooster;
+            uint256 pendingBooster = pendingRewards * decimalEqReward * 1e7 / ratio / decimalEqBooster;
             rewardToken.safeTransfer(msg.sender, pendingRewards);
             boosterToken.safeTransfer(msg.sender, pendingBooster);
-            rewardPaidOut += pendingRewards;
+            rewardsPaidOut += pendingRewards;
             boosterPaidOut += pendingBooster;
             emit Payout(msg.sender, pendingRewards, pendingBooster);
         }
@@ -228,19 +235,19 @@ contract FarmingXava is Ownable {
     function withdraw(uint256 _pid, uint256 _amount) public {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
-        require(user.amount >= _amount, "withdraw: can't withdraw more than deposit");
+        if (user.amount < _amount) revert UnauthorizedWithdrawal();
 
         updatePool(_pid);
-        uint256 pendingAmount = user.amount * pool.accERC20PerShare / 1e36 - user.rewardDebt;
-        uint256 pendingBooster = pendingRewards * decimalsEqReward * 1e7 / boostRewardRatio / decimalEqBooster;
+        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / 1e36 - user.rewardDebt;
+        uint256 pendingBooster = pendingRewards * decimalEqReward * 1e7 / ratio / decimalEqBooster;
 
-        rewardToken.safeTransfer(msg.sender, pendingAmount);
-        boosterToken.safeTransfer(msg.sender, pendingAmount);
+        rewardToken.safeTransfer(msg.sender, pendingRewards);
+        boosterToken.safeTransfer(msg.sender, pendingBooster);
         emit Payout(msg.sender, pendingRewards, pendingBooster);
 
-        rewardPaidOut += pendingAmount;
-        boosterPaidOut += boosterAmount;
-        user.rewardDebt = user.amount * pool.accERC20PerShare / 1e36;
+        rewardsPaidOut += pendingRewards;
+        boosterPaidOut += pendingBooster;
+        user.rewardDebt = user.amount * pool.accRewardsPerShare / 1e36;
         pool.totalDeposits -= _amount;
 
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
@@ -253,7 +260,7 @@ contract FarmingXava is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
 
         pool.totalDeposits -= user.amount;
-        pool.lpToken.safeTransfer(address(msg.sender), user.amount);
+        pool.pooledToken.safeTransfer(address(msg.sender), user.amount);
         emit EmergencyWithdraw(msg.sender, _pid, user.amount);
 
         user.amount = 0;
