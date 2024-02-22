@@ -12,7 +12,7 @@ interface IERC20Metadata {
     function decimals() external view returns(uint8);
 }
 
-contract FarmingXava is Ownable {
+contract DragonSwapBoostedFarm is Ownable {
     using SafeERC20 for IERC20;
 
     struct UserInfo {
@@ -41,7 +41,7 @@ contract FarmingXava is Ownable {
 
     uint256 public ratio;
 
-    uint256 public rewardPerSecond;
+    uint256 immutable rewardPerSecond;
     uint256 public totalAllocPoint;
 
     uint256 public startTimestamp;
