@@ -157,7 +157,7 @@ contract DragonswapStaker is Ownable {
     }
 
     // Deposit LP tokens to Farm for ERC20 allocation.
-    function deposit(uint256 _pid, uint256 _amount) public {
+    function deposit(uint256 _pid, uint256 _amount) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
 
@@ -178,8 +178,19 @@ contract DragonswapStaker is Ownable {
         emit Deposit(msg.sender, _pid, _amount);
     }
 
+    function claim(uint256 _pid) external {
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][msg.sender];
+        updatePool(_pid);
+        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / 1e36 - user.rewardDebt;
+        rewardToken.safeTransfer(msg.sender, pendingRewards);
+        rewardsPaidOut += pendingRewards;
+        user.rewardDebt = user.amount * pool.accRewardsPerShare / 1e36;
+        emit Payout(msg.sender, pendingRewards);
+    }
+
     // Withdraw LP tokens from Farm.
-    function withdraw(uint256 _pid, uint256 _amount) public {
+    function withdraw(uint256 _pid, uint256 _amount) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         if (user.amount < _amount) revert UnauthorizedWithdrawal();
@@ -199,7 +210,7 @@ contract DragonswapStaker is Ownable {
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(uint256 _pid) public {
+    function emergencyWithdraw(uint256 _pid) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
 
