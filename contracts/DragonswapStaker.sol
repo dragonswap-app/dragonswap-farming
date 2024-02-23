@@ -12,7 +12,7 @@ interface IERC20Metadata {
     function decimals() external view returns(uint8);
 }
 
-contract DragonSwapStakerBoosted is Ownable {
+contract DragonswapStaker is Ownable {
     using SafeERC20 for IERC20;
 
     struct UserInfo {
@@ -29,19 +29,11 @@ contract DragonSwapStakerBoosted is Ownable {
     }
 
     IERC20 public immutable rewardToken;
-    IERC20 public immutable boosterToken;
-
-    uint256 public decimalEqReward;
-    uint256 public decimalEqBooster;
 
     uint256 public totalRewards;
-    uint256 public totalBooster;
     uint256 public rewardsPaidOut;
-    uint256 public boosterPaidOut;
 
-    uint256 public ratio;
-
-    uint256 immutable rewardPerSecond;
+    uint256 public rewardPerSecond;
     uint256 public totalAllocPoint;
 
     uint256 public startTimestamp;
@@ -52,28 +44,16 @@ contract DragonSwapStakerBoosted is Ownable {
     mapping (uint256 => mapping (address => UserInfo)) public userInfo;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-    event Fund(address indexed funder, uint256 rewardAmount, uint256 boosterAmount);
-    event Payout(address indexed user, uint256 pendingReward, uint256 pendingBooster);
+    event Fund(address indexed funder, uint256 rewardAmount);
+    event Payout(address indexed user, uint256 pendingReward);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
-    constructor(IERC20 _rewardToken, IERC20 _boosterToken, uint256 _rewardPerSecond, uint256 _startTimestamp) Ownable(msg.sender) {
+    constructor(IERC20 _rewardToken, uint256 _rewardPerSecond, uint256 _startTimestamp) Ownable(msg.sender) {
         rewardToken = _rewardToken;
-        boosterToken = _boosterToken;
         rewardPerSecond = _rewardPerSecond;
         startTimestamp = _startTimestamp;
         endTimestamp = _startTimestamp;
-
-        uint8 rewardDecimals = IERC20Metadata(address(_rewardToken)).decimals();
-        uint8 boosterDecimals = IERC20Metadata(address(_boosterToken)).decimals();
-
-        if (rewardDecimals > boosterDecimals) {
-            decimalEqReward = 10 ^ (rewardDecimals - boosterDecimals);
-            decimalEqBooster = 1;
-        } else {
-            decimalEqReward = 1;
-            decimalEqBooster = 10 ^ (boosterDecimals - rewardDecimals);
-        }
     }
 
     function pools() external view returns (uint256) {
@@ -81,38 +61,12 @@ contract DragonSwapStakerBoosted is Ownable {
     }
 
     // Fund the farm, increase the end block
-    function fund(uint256 rewardAmount, uint256 boosterAmount) external {
+    function fund(uint256 rewardAmount) external {
         if (block.timestamp >= endTimestamp) revert FarmClosed();
-        // Transfer tokens optimistically and use allowance
         rewardToken.safeTransferFrom(msg.sender, address(this), rewardAmount);
-        boosterToken.safeTransferFrom(msg.sender, address(this), boosterAmount);
-
-        rewardAmount *= decimalEqReward;
-        boosterAmount *= decimalEqBooster;
-
-        // Compute ratio with 1e7 precision
-        uint256 inputRatio = 1e7 * rewardAmount / boosterAmount;
-        // Gas optimization
-        uint256 appliedRatio = ratio;
-        if (appliedRatio == 0) {
-            appliedRatio = inputRatio;
-        } else if (inputRatio > appliedRatio) {
-            uint256 rewardAmountChange = rewardAmount - boosterAmount * appliedRatio / 1e7;
-            rewardToken.safeTransfer(msg.sender, rewardAmountChange / decimalEqReward);
-            rewardAmount -= rewardAmountChange;
-        } else if (inputRatio < appliedRatio) {
-            uint256 boosterAmountChange = boosterAmount - rewardAmount * 1e7 / appliedRatio;
-            boosterToken.safeTransfer(msg.sender, boosterAmountChange / decimalEqBooster );
-            boosterAmount -= boosterAmountChange;
-        }
-        rewardAmount /= decimalEqReward;
-        boosterAmount /= decimalEqBooster;
-        // We count in that rewardsPerSecond are aligned with rewardToken decimals
         endTimestamp += rewardAmount / rewardPerSecond;
         totalRewards += rewardAmount;
-        totalBooster += boosterAmount;
-
-        emit Fund(msg.sender, rewardAmount, boosterAmount);
+        emit Fund(msg.sender, rewardAmount);
     }
 
     function add(uint256 _allocPoint, IERC20 _pooledToken, bool _withUpdate) external onlyOwner {
@@ -146,7 +100,7 @@ contract DragonSwapStakerBoosted is Ownable {
     }
 
     // View function to see pending ERC20s for a user.
-    function pending(uint256 _pid, address _user) external view returns (uint256 pendingRewards, uint256 pendingBooster) {
+    function pending(uint256 _pid, address _user) external view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         UserInfo memory user = userInfo[_pid][_user];
         uint256 accRewardsPerShare = pool.accRewardsPerShare;
@@ -160,20 +114,16 @@ contract DragonSwapStakerBoosted is Ownable {
             uint256 totalReward = timeElapsed * rewardPerSecond * pool.allocPoint / totalAllocPoint;
             accRewardsPerShare = accRewardsPerShare + totalReward * 1e36 / pooledTokens;
         }
-        pendingRewards = user.amount * accRewardsPerShare / 1e36 - user.rewardDebt;
-        pendingBooster = pendingRewards * decimalEqReward * 1e7 / ratio / decimalEqBooster;
+        return user.amount * accRewardsPerShare / 1e36 - user.rewardDebt;
     }
 
     // View function for total reward the farm has yet to pay out.
-    function totalPending() external view returns (uint256 pendingRewards, uint256 pendingBooster) {
+    function totalPending() external view returns (uint256) {
         if (block.timestamp <= startTimestamp) {
-            return (0, 0);
+            return 0;
         }
-
         uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
-
-        pendingRewards = rewardPerSecond * (lastTimestamp - startTimestamp) - rewardsPaidOut;
-        pendingBooster = pendingRewards * decimalEqReward * 1e7 / ratio / decimalEqBooster;
+        return rewardPerSecond * (lastTimestamp - startTimestamp) - rewardsPaidOut;
     }
 
     // Update reward variables for all pools. Be careful of gas spending!
@@ -215,12 +165,9 @@ contract DragonSwapStakerBoosted is Ownable {
 
         if (user.amount > 0) {
             uint256 pendingRewards = user.amount * pool.accRewardsPerShare / 1e36 - user.rewardDebt;
-            uint256 pendingBooster = pendingRewards * decimalEqReward * 1e7 / ratio / decimalEqBooster;
             rewardToken.safeTransfer(msg.sender, pendingRewards);
-            boosterToken.safeTransfer(msg.sender, pendingBooster);
             rewardsPaidOut += pendingRewards;
-            boosterPaidOut += pendingBooster;
-            emit Payout(msg.sender, pendingRewards, pendingBooster);
+            emit Payout(msg.sender, pendingRewards);
         }
 
         pool.pooledToken.safeTransferFrom(address(msg.sender), address(this), _amount);
@@ -239,14 +186,11 @@ contract DragonSwapStakerBoosted is Ownable {
 
         updatePool(_pid);
         uint256 pendingRewards = user.amount * pool.accRewardsPerShare / 1e36 - user.rewardDebt;
-        uint256 pendingBooster = pendingRewards * decimalEqReward * 1e7 / ratio / decimalEqBooster;
 
         rewardToken.safeTransfer(msg.sender, pendingRewards);
-        boosterToken.safeTransfer(msg.sender, pendingBooster);
-        emit Payout(msg.sender, pendingRewards, pendingBooster);
+        emit Payout(msg.sender, pendingRewards);
 
         rewardsPaidOut += pendingRewards;
-        boosterPaidOut += pendingBooster;
         user.rewardDebt = user.amount * pool.accRewardsPerShare / 1e36;
         pool.totalDeposits -= _amount;
 
