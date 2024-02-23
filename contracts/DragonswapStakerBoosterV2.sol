@@ -85,7 +85,6 @@ contract DragonSwapStakerBoosted is Ownable {
         return poolInfo.length;
     }
 
-    // Fund the farm, increase the end block
     function fund(uint256 rewardAmount, uint256 boosterAmount) external {
         if (block.timestamp >= endTimestamp) revert FarmClosed();
         // Transfer tokens optimistically and use allowance
@@ -95,7 +94,6 @@ contract DragonSwapStakerBoosted is Ownable {
         rewardAmount *= decimalEqReward;
         boosterAmount *= decimalEqBooster;
 
-        // Compute ratio with P2 precision
         uint256 inputRatio = P2 * rewardAmount / boosterAmount;
         // Gas optimization
         uint256 appliedRatio = ratio;
@@ -112,7 +110,7 @@ contract DragonSwapStakerBoosted is Ownable {
         }
         rewardAmount /= decimalEqReward;
         boosterAmount /= decimalEqBooster;
-        // We count in that rewardsPerSecond are aligned with rewardToken decimals
+
         endTimestamp += rewardAmount / rewardPerSecond;
         totalRewards += rewardAmount;
         totalBooster += boosterAmount;
@@ -135,7 +133,6 @@ contract DragonSwapStakerBoosted is Ownable {
         }));
     }
 
-    // Update the given pool's ERC20 allocation point. Can only be called by the owner.
     function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) external onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
@@ -150,7 +147,6 @@ contract DragonSwapStakerBoosted is Ownable {
         return user.amount;
     }
 
-    // View function to see pending ERC20s for a user.
     function pending(uint256 _pid, address _user) external view returns (uint256 pendingRewards, uint256 pendingBooster) {
         PoolInfo memory pool = poolInfo[_pid];
         UserInfo memory user = userInfo[_pid][_user];
@@ -168,7 +164,6 @@ contract DragonSwapStakerBoosted is Ownable {
         pendingBooster = pendingRewards * decimalEqReward * P2 / ratio / decimalEqBooster;
     }
 
-    // View function for total reward the farm has yet to pay out.
     function totalPending() external view returns (uint256 pendingRewards, uint256 pendingBooster) {
         if (block.timestamp <= startTimestamp) {
             return (0, 0);
@@ -180,7 +175,6 @@ contract DragonSwapStakerBoosted is Ownable {
         pendingBooster = pendingRewards * decimalEqReward * P2 / ratio / decimalEqBooster;
     }
 
-    // Update reward variables for all pools. Be careful of gas spending!
     function massUpdatePools() public {
         uint256 length = poolInfo.length;
         for (uint256 pid = 0; pid < length; ++pid) {
@@ -188,7 +182,6 @@ contract DragonSwapStakerBoosted is Ownable {
         }
     }
 
-    // Update reward variables of the given pool to be up-to-date.
     function updatePool(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
@@ -234,23 +227,6 @@ contract DragonSwapStakerBoosted is Ownable {
         emit Deposit(msg.sender, _pid, _amount);
     }
 
-    function claim(uint256 _pid) external {
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        updatePool(_pid);
-        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / P1 - user.rewardDebt;
-        uint256 pendingBooster = pendingRewards * decimalEqReward * P2 / ratio / decimalEqBooster;
-
-        rewardToken.safeTransfer(msg.sender, pendingRewards);
-        boosterToken.safeTransfer(msg.sender, pendingBooster);
-
-        rewardsPaidOut += pendingRewards;
-        boosterPaidOut += pendingBooster;
-        user.rewardDebt = user.amount * pool.accRewardsPerShare / P1;
-        emit Payout(msg.sender, pendingRewards, pendingBooster);
-    }
-
-    // Withdraw LP tokens from Farm.
     function withdraw(uint256 _pid, uint256 _amount) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -273,7 +249,6 @@ contract DragonSwapStakerBoosted is Ownable {
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
-    // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw(uint256 _pid) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];

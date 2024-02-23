@@ -65,7 +65,6 @@ contract DragonswapStaker is Ownable {
         return poolInfo.length;
     }
 
-    // Fund the farm, increase the end block
     function fund(uint256 rewardAmount) external {
         if (block.timestamp >= endTimestamp) revert FarmClosed();
         rewardToken.safeTransferFrom(msg.sender, address(this), rewardAmount);
@@ -89,7 +88,6 @@ contract DragonswapStaker is Ownable {
         }));
     }
 
-    // Update the given pool's ERC20 allocation point. Can only be called by the owner.
     function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) external onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
@@ -98,13 +96,11 @@ contract DragonswapStaker is Ownable {
         poolInfo[_pid].allocPoint = _allocPoint;
     }
 
-    // View function to see deposited LP for a user.
     function deposited(uint256 _pid, address _user) external view returns (uint256) {
         UserInfo storage user = userInfo[_pid][_user];
         return user.amount;
     }
 
-    // View function to see pending ERC20s for a user.
     function pending(uint256 _pid, address _user) external view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         UserInfo memory user = userInfo[_pid][_user];
@@ -121,7 +117,6 @@ contract DragonswapStaker is Ownable {
         return user.amount * accRewardsPerShare / P1 - user.rewardDebt;
     }
 
-    // View function for total reward the farm has yet to pay out.
     function totalPending() external view returns (uint256) {
         if (block.timestamp <= startTimestamp) {
             return 0;
@@ -130,7 +125,6 @@ contract DragonswapStaker is Ownable {
         return rewardPerSecond * (lastTimestamp - startTimestamp) - rewardsPaidOut;
     }
 
-    // Update reward variables for all pools. Be careful of gas spending!
     function massUpdatePools() public {
         uint256 length = poolInfo.length;
         for (uint256 pid = 0; pid < length; ++pid) {
@@ -138,7 +132,6 @@ contract DragonswapStaker is Ownable {
         }
     }
 
-    // Update reward variables of the given pool to be up-to-date.
     function updatePool(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
@@ -157,7 +150,6 @@ contract DragonswapStaker is Ownable {
         pool.lastRewardTimestamp = lastTimestamp;
     }
 
-    // Deposit LP tokens to Farm for ERC20 allocation.
     function deposit(uint256 _pid, uint256 _amount) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -179,18 +171,6 @@ contract DragonswapStaker is Ownable {
         emit Deposit(msg.sender, _pid, _amount);
     }
 
-    function claim(uint256 _pid) external {
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
-        updatePool(_pid);
-        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / P1 - user.rewardDebt;
-        rewardToken.safeTransfer(msg.sender, pendingRewards);
-        rewardsPaidOut += pendingRewards;
-        user.rewardDebt = user.amount * pool.accRewardsPerShare / P1;
-        emit Payout(msg.sender, pendingRewards);
-    }
-
-    // Withdraw LP tokens from Farm.
     function withdraw(uint256 _pid, uint256 _amount) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -210,7 +190,6 @@ contract DragonswapStaker is Ownable {
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
-    // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw(uint256 _pid) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
