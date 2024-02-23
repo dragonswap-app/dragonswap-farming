@@ -33,7 +33,7 @@ contract DragonswapStaker is Ownable {
     uint256 public totalRewards;
     uint256 public rewardsPaidOut;
 
-    uint256 public rewardPerSecond;
+    uint256 immutable rewardPerSecond;
     uint256 public totalAllocPoint;
 
     uint256 public startTimestamp;
@@ -42,6 +42,11 @@ contract DragonswapStaker is Ownable {
     PoolInfo[] public poolInfo;
 
     mapping (uint256 => mapping (address => UserInfo)) public userInfo;
+
+    // Precision constant used for accumulated rewards per share
+    uint256 public constant P1 = 1e18;
+    // Precision constant used for reward/booster ratio
+    uint256 public constant P2 = 1e7;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Fund(address indexed funder, uint256 rewardAmount);
@@ -109,12 +114,11 @@ contract DragonswapStaker is Ownable {
 
         if (block.timestamp > pool.lastRewardTimestamp && pooledTokens != 0) {
             uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
-            uint256 timestampToCompare = pool.lastRewardTimestamp < endTimestamp ? pool.lastRewardTimestamp : endTimestamp;
-            uint256 timeElapsed = lastTimestamp - timestampToCompare;
+            uint256 timeElapsed = lastTimestamp - pool.lastRewardTimestamp;
             uint256 totalReward = timeElapsed * rewardPerSecond * pool.allocPoint / totalAllocPoint;
-            accRewardsPerShare = accRewardsPerShare + totalReward * 1e36 / pooledTokens;
+            accRewardsPerShare += totalReward * P1 / pooledTokens;
         }
-        return user.amount * accRewardsPerShare / 1e36 - user.rewardDebt;
+        return user.amount * accRewardsPerShare / P1 - user.rewardDebt;
     }
 
     // View function for total reward the farm has yet to pay out.
@@ -138,10 +142,7 @@ contract DragonswapStaker is Ownable {
     function updatePool(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
-
-        if (lastTimestamp <= pool.lastRewardTimestamp) {
-            return;
-        }
+        if (lastTimestamp == pool.lastRewardTimestamp) return;
         uint256 lpSupply = pool.totalDeposits;
 
         if (lpSupply == 0) {
@@ -152,8 +153,8 @@ contract DragonswapStaker is Ownable {
         uint256 nrOfSeconds = lastTimestamp - pool.lastRewardTimestamp;
         uint256 accRewards = nrOfSeconds * rewardPerSecond * pool.allocPoint / totalAllocPoint;
 
-        pool.accRewardsPerShare += accRewards * 1e36 / lpSupply;
-        pool.lastRewardTimestamp = block.timestamp;
+        pool.accRewardsPerShare += accRewards * P1 / lpSupply;
+        pool.lastRewardTimestamp = lastTimestamp;
     }
 
     // Deposit LP tokens to Farm for ERC20 allocation.
@@ -164,7 +165,7 @@ contract DragonswapStaker is Ownable {
         updatePool(_pid);
 
         if (user.amount > 0) {
-            uint256 pendingRewards = user.amount * pool.accRewardsPerShare / 1e36 - user.rewardDebt;
+            uint256 pendingRewards = user.amount * pool.accRewardsPerShare / P1 - user.rewardDebt;
             rewardToken.safeTransfer(msg.sender, pendingRewards);
             rewardsPaidOut += pendingRewards;
             emit Payout(msg.sender, pendingRewards);
@@ -174,7 +175,7 @@ contract DragonswapStaker is Ownable {
         pool.totalDeposits += _amount;
 
         user.amount += _amount;
-        user.rewardDebt = user.amount * pool.accRewardsPerShare / 1e36;
+        user.rewardDebt = user.amount * pool.accRewardsPerShare / P1;
         emit Deposit(msg.sender, _pid, _amount);
     }
 
@@ -182,10 +183,10 @@ contract DragonswapStaker is Ownable {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         updatePool(_pid);
-        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / 1e36 - user.rewardDebt;
+        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / P1 - user.rewardDebt;
         rewardToken.safeTransfer(msg.sender, pendingRewards);
         rewardsPaidOut += pendingRewards;
-        user.rewardDebt = user.amount * pool.accRewardsPerShare / 1e36;
+        user.rewardDebt = user.amount * pool.accRewardsPerShare / P1;
         emit Payout(msg.sender, pendingRewards);
     }
 
@@ -196,13 +197,13 @@ contract DragonswapStaker is Ownable {
         if (user.amount < _amount) revert UnauthorizedWithdrawal();
 
         updatePool(_pid);
-        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / 1e36 - user.rewardDebt;
+        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / P1 - user.rewardDebt;
 
         rewardToken.safeTransfer(msg.sender, pendingRewards);
         emit Payout(msg.sender, pendingRewards);
 
         rewardsPaidOut += pendingRewards;
-        user.rewardDebt = user.amount * pool.accRewardsPerShare / 1e36;
+        user.rewardDebt = user.amount * pool.accRewardsPerShare / P1;
         pool.totalDeposits -= _amount;
 
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
