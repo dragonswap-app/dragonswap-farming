@@ -74,9 +74,9 @@ contract DragonSwapStakerBoosted is Ownable {
 
         if (rewardDecimals > boosterDecimals) {
             decimalEqReward = 1;
-            decimalEqBooster = 10 ^ (rewardDecimals - boosterDecimals);
+            decimalEqBooster = 10 ** (rewardDecimals - boosterDecimals);
         } else {
-            decimalEqReward = 10 ^ (boosterDecimals - rewardDecimals);
+            decimalEqReward = 10 ** (boosterDecimals - rewardDecimals);
             decimalEqBooster = 1;
         }
     }
