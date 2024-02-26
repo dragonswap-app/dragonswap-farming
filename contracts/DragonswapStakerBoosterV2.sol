@@ -41,7 +41,7 @@ contract DragonSwapStakerBoosted is Ownable {
 
     uint256 public ratio;
 
-    uint256 immutable rewardPerSecond;
+    uint256 public immutable rewardPerSecond;
     uint256 public totalAllocPoint;
 
     uint256 public startTimestamp;
@@ -73,11 +73,11 @@ contract DragonSwapStakerBoosted is Ownable {
         uint8 boosterDecimals = IERC20Metadata(address(_boosterToken)).decimals();
 
         if (rewardDecimals > boosterDecimals) {
-            decimalEqReward = 10 ^ (rewardDecimals - boosterDecimals);
-            decimalEqBooster = 1;
-        } else {
             decimalEqReward = 1;
-            decimalEqBooster = 10 ^ (boosterDecimals - rewardDecimals);
+            decimalEqBooster = 10 ^ (rewardDecimals - boosterDecimals);
+        } else {
+            decimalEqReward = 10 ^ (boosterDecimals - rewardDecimals);
+            decimalEqBooster = 1;
         }
     }
 
@@ -98,7 +98,7 @@ contract DragonSwapStakerBoosted is Ownable {
         // Gas optimization
         uint256 appliedRatio = ratio;
         if (appliedRatio == 0) {
-            appliedRatio = inputRatio;
+            ratio = inputRatio;
         } else if (inputRatio > appliedRatio) {
             uint256 rewardAmountChange = rewardAmount - boosterAmount * appliedRatio / P2;
             rewardToken.safeTransfer(msg.sender, rewardAmountChange / decimalEqReward);
