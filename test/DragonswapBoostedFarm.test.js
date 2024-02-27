@@ -152,12 +152,180 @@ describe('DragonswapStakerBoosted', () => {
       expect(totalPending[0]).eq(parseUnits("1000", rewardTokenDecimals));
       expect(totalPending[1]).eq(parseUnits("2000", boosterTokenDecimals));
 
-      console.log('poolInfo', await boostedFarm.poolInfo(0));
       const pendingAlice = await boostedFarm.pending(0, alice.address);
-      console.log("pendingAlice", pendingAlice.toString());
+      expect(pendingAlice[0]).eq(parseUnits("750", rewardTokenDecimals));
+      expect(pendingAlice[1]).eq(parseUnits("1500", boosterTokenDecimals));
 
       const pendingBob = await boostedFarm.pending(0, bob.address);
-        console.log("pendingBob", pendingBob.toString());
+      expect(pendingBob[0]).eq(parseUnits("250", rewardTokenDecimals));
+      expect(pendingBob[1]).eq(parseUnits("500", boosterTokenDecimals));
+    });
+
+
+    describe('With a 3th participant after 30 seconds', function () {
+      before(async () => {
+        await advanceTimeAndBlock(startTimestamp - await currentTimestamp() + 28);
+
+        await lpToken.connect(carl).approve(boostedFarm.address, 2000)
+        await boostedFarm.connect(carl).deposit(0, 2000);
+
+        const balanceCarl = await lpToken.balanceOf(carl.address);
+        const depositedCarl = await boostedFarm.deposited(0, carl.address);
+        expect(balanceCarl).eq(0);
+        expect(depositedCarl).eq(2000);
+      });
+
+        it('Has a total of 3000 rewardTokens and 6000 boosterTokens', async () => {
+          const totalPending = await boostedFarm.totalPending();
+            expect(totalPending[0]).eq(parseUnits("3000", rewardTokenDecimals));
+            expect(totalPending[1]).eq(parseUnits("6000", boosterTokenDecimals));
+        });
+
+        it('Has correct pending rewards for all participants', async () => {
+          const pendingAlice = await boostedFarm.pending(0, alice.address);
+            expect(pendingAlice[0]).eq(parseUnits("2250", rewardTokenDecimals));
+            expect(pendingAlice[1]).eq(parseUnits("4500", boosterTokenDecimals));
+
+            const pendingBob = await boostedFarm.pending(0, bob.address);
+            expect(pendingBob[0]).eq(parseUnits("750", rewardTokenDecimals));
+            expect(pendingBob[1]).eq(parseUnits("1500", boosterTokenDecimals));
+
+            const pendingCarl = await boostedFarm.pending(0, carl.address);
+            expect(pendingCarl[0]).eq(parseUnits("0", rewardTokenDecimals));
+            expect(pendingCarl[1]).eq(parseUnits("0", boosterTokenDecimals));
+        });
+    });
+
+    describe('After 50 seconds of farming', function () {
+      before(async () => {
+        await advanceTimeAndBlock(startTimestamp - await currentTimestamp() + 50);
+      });
+
+      it('Has a total of 5000 rewardTokens and 10000 boosterTokens', async () => {
+        const totalPending = await boostedFarm.totalPending();
+        expect(totalPending[0]).eq(parseUnits("5000", rewardTokenDecimals));
+        expect(totalPending[1]).eq(parseUnits("10000", boosterTokenDecimals));
+      });
+
+        it('Has correct pending rewards for all participants', async () => {
+            const pendingAlice = await boostedFarm.pending(0, alice.address);
+                expect(pendingAlice[0]).eq(parseUnits("3000", rewardTokenDecimals));
+                expect(pendingAlice[1]).eq(parseUnits("6000", boosterTokenDecimals));
+
+                const pendingBob = await boostedFarm.pending(0, bob.address);
+                expect(pendingBob[0]).eq(parseUnits("1000", rewardTokenDecimals));
+                expect(pendingBob[1]).eq(parseUnits("2000", boosterTokenDecimals));
+
+                const pendingCarl = await boostedFarm.pending(0, carl.address);
+                expect(pendingCarl[0]).eq(parseUnits("1000", rewardTokenDecimals));
+                expect(pendingCarl[1]).eq(parseUnits("2000", boosterTokenDecimals));
+        });
+    });
+
+    describe('With a participant withdrawing after 70 seconds', function () {
+        before(async () => {
+            await advanceTimeAndBlock(startTimestamp - await currentTimestamp() + 69);
+
+            await boostedFarm.connect(alice).withdraw(0, 1500);
+        });
+
+        it('Gives alice 3750 rewardToken, 7500 boosterToken and 1500 LP', async () => {
+            const balanceAliceLP = await lpToken.balanceOf(alice.address);
+            expect(balanceAliceLP).eq(5000);
+
+            const balanceAliceReward = await rewardToken.balanceOf(alice.address);
+            expect(balanceAliceReward).eq(parseUnits("3750", rewardTokenDecimals));
+
+            const balanceAliceBooster = await boosterToken.balanceOf(alice.address);
+            expect(balanceAliceBooster).eq(parseUnits("7500", boosterTokenDecimals));
+        });
+
+        it('Has no deposit for alice', async () => {
+          const pendingAlice = await boostedFarm.pending(0, alice.address);
+          expect(pendingAlice[0]).eq(0);
+          expect(pendingAlice[1]).eq(0);
+        });
+
+        it('Has a total of 3250 rewardTokens and 6500 boosterTokens', async () => {
+            const totalPending = await boostedFarm.totalPending();
+            expect(totalPending[0]).eq(parseUnits("3250", rewardTokenDecimals));
+            expect(totalPending[1]).eq(parseUnits("6500", boosterTokenDecimals));
+        });
+
+        it('Has no rewards for alice and has correct pending rewards for all participants', async () => {
+            const pendingAlice = await boostedFarm.pending(0, alice.address);
+            expect(pendingAlice[0]).eq(0);
+            expect(pendingAlice[1]).eq(0);
+
+            const pendingBob = await boostedFarm.pending(0, bob.address);
+            expect(pendingBob[0]).eq(parseUnits("1250", rewardTokenDecimals));
+            expect(pendingBob[1]).eq(parseUnits("2500", boosterTokenDecimals));
+
+            const pendingCarl = await boostedFarm.pending(0, carl.address);
+            expect(pendingCarl[0]).eq(parseUnits("2000", rewardTokenDecimals));
+            expect(pendingCarl[1]).eq(parseUnits("4000", boosterTokenDecimals));
+        });
+    });
+
+    describe('With a participant partially withdrawing after 80 seconds', function () {
+      before(async () => {
+        await advanceTimeAndBlock(startTimestamp - await currentTimestamp() + 79);
+
+        await boostedFarm.connect(carl).withdraw(0, 1500);
+      });
+
+      it('Gives carl 2800 rewardTokens, 5600 boosterTokens and 1500 LP', async () => {
+         const balanceCarlLP = await lpToken.balanceOf(carl.address);
+        expect(balanceCarlLP).eq(1500);
+
+        const balanceCarlReward = await rewardToken.balanceOf(carl.address);
+        expect(balanceCarlReward).eq(parseUnits("2800", rewardTokenDecimals));
+
+        const balanceCarlBooster = await boosterToken.balanceOf(carl.address);
+        expect(balanceCarlBooster).eq(parseUnits("5600", boosterTokenDecimals));
+      });
+
+      it('Has 500 LP for carl', async () => {
+        const depositedCarl = await boostedFarm.deposited(0, carl.address);
+        console.log("depositedCarl", depositedCarl)
+        expect(depositedCarl).eq(500);
+      });
+
+      it('Has a total reward of 1450 rewardTokens and 2900 boosterTokens', async () => {
+        const totalPending = await boostedFarm.totalPending();
+        expect(totalPending[0]).eq(parseUnits("1450", rewardTokenDecimals));
+        expect(totalPending[1]).eq(parseUnits("2900", boosterTokenDecimals));
+      });
+
+      it('Reserved nothing for alice, 1450 rewardTokens and 2900 boosterTokens for bob and nothing for carl', async () => {
+        const pendingAlice = await boostedFarm.pending(0, alice.address);
+        expect(pendingAlice[0]).eq(0);
+        expect(pendingAlice[1]).eq(0);
+
+        const pendingBob = await boostedFarm.pending(0, bob.address);
+        expect(pendingBob[0]).eq(parseUnits("1450", rewardTokenDecimals));
+        expect(pendingBob[1]).eq(parseUnits("2900", boosterTokenDecimals));
+
+        const pendingCarl = await boostedFarm.pending(0, carl.address);
+        expect(pendingCarl[0]).eq(0);
+        expect(pendingCarl[1]).eq(0);
+      });
+    });
+
+    describe('Is safe', function () {
+        it('Won\'t allow alice to withdraw', async () => {
+            await expect(boostedFarm.connect(alice).withdraw(0, 1500)).to.be.revertedWith('UnauthorizedWithdrawal');
+        });
+
+        it('Won\'t allow carl to withdraw more than his deposit', async () => {
+           const deposited = await boostedFarm.deposited(0, carl.address);
+           expect(deposited).eq(500);
+              await expect(boostedFarm.connect(carl).withdraw(0, 1500)).to.be.revertedWith('UnauthorizedWithdrawal');
+        });
+
+        it('')
+
+
     });
   });
 
