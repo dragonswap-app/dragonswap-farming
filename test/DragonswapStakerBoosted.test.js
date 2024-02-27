@@ -57,7 +57,7 @@ describe('Dragonswap Staker Boosted', function () {
   });
 
   it('Should add pool', async () => {
-    await stakerContract.add(100, pooledToken.address, false)
+    await stakerContract.add(100, pooledToken.address, false);
   });
 
   it('Should stake tokens', async () => {
@@ -68,7 +68,9 @@ describe('Dragonswap Staker Boosted', function () {
       .withArgs(deployer.address, fundsToStake);
 
     // alice
-    await pooledToken.connect(alice).approve(stakerContract.address, fundsToStakeAlice);
+    await pooledToken
+      .connect(alice)
+      .approve(stakerContract.address, fundsToStakeAlice);
     expect(await stakerContract.connect(alice).deposit(0, fundsToStakeAlice))
       .to.emit(stakerContract, 'Deposited')
       .withArgs(alice.address, fundsToStakeAlice);
@@ -76,15 +78,15 @@ describe('Dragonswap Staker Boosted', function () {
 
   it('Check pending', async () => {
     console.log(await blockTimestamp(), startTimestamp);
-    await increaseTime(startTimestamp - await blockTimestamp() + 10);
+    await increaseTime(startTimestamp - (await blockTimestamp()) + 10);
     console.log(await blockTimestamp(), startTimestamp);
     await stakerContract.updatePool(0);
     console.log(
-        await stakerContract.poolInfo(0),
-        await stakerContract.ratio(),
-        await stakerContract.pending(0, deployer.address),
-        await stakerContract.pending(0, alice.address),
-        await stakerContract.totalPending()
+      await stakerContract.poolInfo(0),
+      await stakerContract.ratio(),
+      await stakerContract.pending(0, deployer.address),
+      await stakerContract.pending(0, alice.address),
+      await stakerContract.totalPending()
     );
   });
 });
