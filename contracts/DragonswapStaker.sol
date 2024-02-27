@@ -185,6 +185,7 @@ contract DragonswapStaker is Ownable {
         emit Payout(msg.sender, pendingRewards);
 
         rewardsPaidOut += pendingRewards;
+        user.amount -= _amount;
         user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
         pool.totalDeposits -= _amount;
 

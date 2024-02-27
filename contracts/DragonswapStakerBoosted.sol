@@ -252,6 +252,7 @@ contract DragonswapStakerBoosted is Ownable {
 
         rewardsPaidOut += pendingRewards;
         boosterPaidOut += pendingBooster;
+        user.amount -= _amount;
         user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
         pool.totalDeposits -= _amount;
 
