@@ -9,7 +9,7 @@ error FarmClosed();
 error UnauthorizedWithdrawal();
 
 interface IERC20Metadata {
-    function decimals() external view returns(uint8);
+    function decimals() external view returns (uint8);
 }
 
 contract DragonswapStaker is Ownable {
@@ -41,7 +41,7 @@ contract DragonswapStaker is Ownable {
 
     PoolInfo[] public poolInfo;
 
-    mapping (uint256 => mapping (address => UserInfo)) public userInfo;
+    mapping(uint256 => mapping(address => UserInfo)) public userInfo;
 
     // Precision constant used for accumulated rewards per share
     uint256 public constant P1 = 1e18;
@@ -79,13 +79,15 @@ contract DragonswapStaker is Ownable {
         }
         uint256 lastRewardTimestamp = block.timestamp > startTimestamp ? block.timestamp : startTimestamp;
         totalAllocPoint += _allocPoint;
-        poolInfo.push(PoolInfo({
-            pooledToken: _pooledToken,
-            allocPoint: _allocPoint,
-            lastRewardTimestamp: lastRewardTimestamp,
-            accRewardsPerShare: 0,
-            totalDeposits: 0
-        }));
+        poolInfo.push(
+            PoolInfo({
+                pooledToken: _pooledToken,
+                allocPoint: _allocPoint,
+                lastRewardTimestamp: lastRewardTimestamp,
+                accRewardsPerShare: 0,
+                totalDeposits: 0
+            })
+        );
     }
 
     function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) external onlyOwner {
@@ -111,10 +113,10 @@ contract DragonswapStaker is Ownable {
         if (block.timestamp > pool.lastRewardTimestamp && pooledTokens != 0) {
             uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
             uint256 timeElapsed = lastTimestamp - pool.lastRewardTimestamp;
-            uint256 totalReward = timeElapsed * rewardPerSecond * pool.allocPoint / totalAllocPoint;
-            accRewardsPerShare += totalReward * P1 / pooledTokens;
+            uint256 totalReward = (timeElapsed * rewardPerSecond * pool.allocPoint) / totalAllocPoint;
+            accRewardsPerShare += (totalReward * P1) / pooledTokens;
         }
-        return user.amount * accRewardsPerShare / P1 - user.rewardDebt;
+        return (user.amount * accRewardsPerShare) / P1 - user.rewardDebt;
     }
 
     function totalPending() external view returns (uint256) {
@@ -144,9 +146,9 @@ contract DragonswapStaker is Ownable {
         }
 
         uint256 nrOfSeconds = lastTimestamp - pool.lastRewardTimestamp;
-        uint256 accRewards = nrOfSeconds * rewardPerSecond * pool.allocPoint / totalAllocPoint;
+        uint256 accRewards = (nrOfSeconds * rewardPerSecond * pool.allocPoint) / totalAllocPoint;
 
-        pool.accRewardsPerShare += accRewards * P1 / lpSupply;
+        pool.accRewardsPerShare += (accRewards * P1) / lpSupply;
         pool.lastRewardTimestamp = lastTimestamp;
     }
 
@@ -157,7 +159,7 @@ contract DragonswapStaker is Ownable {
         updatePool(_pid);
 
         if (user.amount > 0) {
-            uint256 pendingRewards = user.amount * pool.accRewardsPerShare / P1 - user.rewardDebt;
+            uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P1 - user.rewardDebt;
             rewardToken.safeTransfer(msg.sender, pendingRewards);
             rewardsPaidOut += pendingRewards;
             emit Payout(msg.sender, pendingRewards);
@@ -167,7 +169,7 @@ contract DragonswapStaker is Ownable {
         pool.totalDeposits += _amount;
 
         user.amount += _amount;
-        user.rewardDebt = user.amount * pool.accRewardsPerShare / P1;
+        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
         emit Deposit(msg.sender, _pid, _amount);
     }
 
@@ -177,13 +179,13 @@ contract DragonswapStaker is Ownable {
         if (user.amount < _amount) revert UnauthorizedWithdrawal();
 
         updatePool(_pid);
-        uint256 pendingRewards = user.amount * pool.accRewardsPerShare / P1 - user.rewardDebt;
+        uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P1 - user.rewardDebt;
 
         rewardToken.safeTransfer(msg.sender, pendingRewards);
         emit Payout(msg.sender, pendingRewards);
 
         rewardsPaidOut += pendingRewards;
-        user.rewardDebt = user.amount * pool.accRewardsPerShare / P1;
+        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
         pool.totalDeposits -= _amount;
 
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
