@@ -12,7 +12,7 @@ interface IERC20Metadata {
     function decimals() external view returns (uint8);
 }
 
-contract DragonSwapStakerBoosted is Ownable {
+contract DragonswapStakerBoosted is Ownable {
     using SafeERC20 for IERC20;
 
     struct UserInfo {
