@@ -9,7 +9,12 @@ const timeTravel = async (t) => {
 };
 
 const mineBlock = async (n) => {
-  await ethers.provider.send('evm_mine', [n]);
+  await ethers.provider.send('evm_mine', []);
+};
+
+const advanceTimeAndBlock = async (time) => {
+  await timeTravel(time)
+  await mineBlock()
 };
 
 function getParamFromTxEvent(
@@ -48,4 +53,5 @@ module.exports = {
   mineBlock,
   getParamFromTxEvent,
   balanceOf,
+  advanceTimeAndBlock
 };
