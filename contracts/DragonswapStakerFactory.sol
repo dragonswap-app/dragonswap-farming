@@ -4,24 +4,24 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract DragonswapStakerFactory is Ownable {
-    enum Implementation {
+    enum Impl {
         NONE,
         CLASSIC,
         BOOSTED
     }
 
     // Type of contracts deployed by factory
-    mapping(address => Implementation) public addressToImplementationType;
+    mapping(address => Impl) public deploymentToImplType;
     // Array of all sale deployments
     address[] public deployments;
     // Classic staker contract implementation
-    address public implementationClassic;
+    address public implClassic;
     // Boosted staker contract implementation
-    address public implementationBoosted;
+    address public implBoosted;
 
     // Events
-    event Deployed(address clone, Implementation impType);
-    event ImplementationSet(address implementation, Implementation impType);
+    event Deployed(address clone, Impl impType);
+    event ImplementationSet(address implementation, Impl impType);
 
     // Errors
     error ImplementationNotSet();
@@ -36,13 +36,13 @@ contract DragonswapStakerFactory is Ownable {
      */
     function setImplementationClassic(address implementation) external onlyOwner {
         // Require that implementation is different from current one
-        if (implementationClassic == implementation) {
+        if (implClassic == implementation) {
             revert ImplementationAlreadySet();
         }
         // Set new implementation
-        implementationClassic == implementation;
+        implClassic == implementation;
         // Emit relevant event
-        emit ImplementationSet(implementation, Implementation.CLASSIC);
+        emit ImplementationSet(implementation, Impl.CLASSIC);
     }
 
     /**
@@ -50,13 +50,13 @@ contract DragonswapStakerFactory is Ownable {
      */
     function setImplementationBoosted(address implementation) external onlyOwner {
         // Require that implementation is different from current one
-        if (implementationBoosted == implementation) {
+        if (implBoosted == implementation) {
             revert ImplementationAlreadySet();
         }
         // Set new implementation
-        implementationBoosted == implementation;
+        implBoosted == implementation;
         // Emit relevant event
-        emit ImplementationSet(implementation, Implementation.CLASSIC);
+        emit ImplementationSet(implementation, Impl.CLASSIC);
     }
 
     function deployClassic(address rewardToken, uint256 rewardPerSecond, uint256 startTimestamp) external onlyOwner {
@@ -67,7 +67,7 @@ contract DragonswapStakerFactory is Ownable {
             rewardPerSecond,
             startTimestamp
         );
-        deploy(data, Implementation.CLASSIC);
+        deploy(data, Impl.CLASSIC);
     }
 
     function deployBoosted(
@@ -84,20 +84,20 @@ contract DragonswapStakerFactory is Ownable {
             rewardPerSecond,
             startTimestamp
         );
-        deploy(data, Implementation.BOOSTED);
+        deploy(data, Impl.BOOSTED);
     }
     /**
      * @dev Function to make a new deployment and initialize clone instance
      */
-    function deploy(bytes memory data, Implementation impType) private {
-        address imp = impType == Implementation.CLASSIC
-            ? implementationClassic
-            : impType == Implementation.BOOSTED
-                ? implementationBoosted
+    function deploy(bytes memory data, Impl implType) private {
+        address impl = implType == Impl.CLASSIC
+            ? implClassic
+            : implType == Impl.BOOSTED
+                ? implBoosted
                 : address(0);
 
         // Require that implementation is set
-        if (imp == address(0)) {
+        if (impl == address(0)) {
             revert ImplementationNotSet();
         }
 
@@ -108,9 +108,9 @@ contract DragonswapStakerFactory is Ownable {
         assembly {
             // Cleans the upper 96 bits of the `implementation` word, then packs the first 3 bytes
             // of the `implementation` address with the bytecode before the address.
-            mstore(0x00, or(shr(0xe8, shl(0x60, imp)), 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000))
+            mstore(0x00, or(shr(0xe8, shl(0x60, impl)), 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000))
             // Packs the remaining 17 bytes of `implementation` with the bytecode after the address.
-            mstore(0x20, or(shl(0x78, imp), 0x5af43d82803e903d91602b57fd5bf3))
+            mstore(0x20, or(shl(0x78, impl), 0x5af43d82803e903d91602b57fd5bf3))
             clone := create(0, 0x09, 0x37)
         }
         // Require that clone is created
@@ -119,7 +119,7 @@ contract DragonswapStakerFactory is Ownable {
         }
 
         // Mark sale as created through official factory
-        addressToImplementationType[clone] = impType;
+        deploymentToImplType[clone] = implType;
         // Add sale to allSales
         deployments.push(clone);
 
@@ -130,7 +130,7 @@ contract DragonswapStakerFactory is Ownable {
         }
 
         // Emit relevant event
-        emit Deployed(clone, impType);
+        emit Deployed(clone, implType);
     }
 
     /**
@@ -175,7 +175,7 @@ contract DragonswapStakerFactory is Ownable {
         }
     }
 
-    function isDeployedThroughFactory(address stakerContract) external view returns (bool) {
-        return uint8(addressToImplementationType[stakerContract]) > 0 ? true : false;
+    function isDeployedThroughFactory(address deployment) external view returns (bool) {
+        return uint8(deploymentToImplType[deployment]) > 0 ? true : false;
     }
 }
