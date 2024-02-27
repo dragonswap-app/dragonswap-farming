@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 error FarmClosed();
 error UnauthorizedWithdrawal();
@@ -12,7 +12,7 @@ interface IERC20Metadata {
     function decimals() external view returns (uint8);
 }
 
-contract DragonswapStakerBoosted is Ownable {
+contract DragonswapStakerBoosted is OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     struct UserInfo {
@@ -28,8 +28,8 @@ contract DragonswapStakerBoosted is Ownable {
         uint256 totalDeposits;
     }
 
-    IERC20 public immutable rewardToken;
-    IERC20 public immutable boosterToken;
+    IERC20 public rewardToken;
+    IERC20 public boosterToken;
 
     uint256 public decimalEqReward;
     uint256 public decimalEqBooster;
@@ -41,7 +41,7 @@ contract DragonswapStakerBoosted is Ownable {
 
     uint256 public ratio;
 
-    uint256 public immutable rewardPerSecond;
+    uint256 public rewardPerSecond;
     uint256 public totalAllocPoint;
 
     uint256 public startTimestamp;
@@ -62,12 +62,15 @@ contract DragonswapStakerBoosted is Ownable {
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
-    constructor(
+    function initialize(
+        address _owner,
         IERC20 _rewardToken,
         IERC20 _boosterToken,
         uint256 _rewardPerSecond,
         uint256 _startTimestamp
-    ) Ownable(msg.sender) {
+    ) external initializer {
+        __Ownable_init(_owner);
+
         rewardToken = _rewardToken;
         boosterToken = _boosterToken;
         rewardPerSecond = _rewardPerSecond;

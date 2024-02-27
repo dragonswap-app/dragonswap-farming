@@ -3,16 +3,12 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 error FarmClosed();
 error UnauthorizedWithdrawal();
 
-interface IERC20Metadata {
-    function decimals() external view returns (uint8);
-}
-
-contract DragonswapStaker is Ownable {
+contract DragonswapStaker is OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     struct UserInfo {
@@ -28,12 +24,12 @@ contract DragonswapStaker is Ownable {
         uint256 totalDeposits;
     }
 
-    IERC20 public immutable rewardToken;
+    IERC20 public rewardToken;
 
     uint256 public totalRewards;
     uint256 public rewardsPaidOut;
 
-    uint256 immutable rewardPerSecond;
+    uint256 public rewardPerSecond;
     uint256 public totalAllocPoint;
 
     uint256 public startTimestamp;
@@ -44,9 +40,7 @@ contract DragonswapStaker is Ownable {
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
 
     // Precision constant used for accumulated rewards per share
-    uint256 public constant P1 = 1e18;
-    // Precision constant used for reward/booster ratio
-    uint256 public constant P2 = 1e7;
+    uint256 public constant P = 1e18;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Fund(address indexed funder, uint256 rewardAmount);
@@ -54,7 +48,13 @@ contract DragonswapStaker is Ownable {
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
-    constructor(IERC20 _rewardToken, uint256 _rewardPerSecond, uint256 _startTimestamp) Ownable(msg.sender) {
+    function initialize(
+        address _owner,
+        IERC20 _rewardToken,
+        uint256 _rewardPerSecond,
+        uint256 _startTimestamp
+    ) external initializer {
+        __Ownable_init(_owner);
         rewardToken = _rewardToken;
         rewardPerSecond = _rewardPerSecond;
         startTimestamp = _startTimestamp;
@@ -114,9 +114,9 @@ contract DragonswapStaker is Ownable {
             uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
             uint256 timeElapsed = lastTimestamp - pool.lastRewardTimestamp;
             uint256 totalReward = (timeElapsed * rewardPerSecond * pool.allocPoint) / totalAllocPoint;
-            accRewardsPerShare += (totalReward * P1) / pooledTokens;
+            accRewardsPerShare += (totalReward * P) / pooledTokens;
         }
-        return (user.amount * accRewardsPerShare) / P1 - user.rewardDebt;
+        return (user.amount * accRewardsPerShare) / P - user.rewardDebt;
     }
 
     function totalPending() external view returns (uint256) {
@@ -148,7 +148,7 @@ contract DragonswapStaker is Ownable {
         uint256 nrOfSeconds = lastTimestamp - pool.lastRewardTimestamp;
         uint256 accRewards = (nrOfSeconds * rewardPerSecond * pool.allocPoint) / totalAllocPoint;
 
-        pool.accRewardsPerShare += (accRewards * P1) / lpSupply;
+        pool.accRewardsPerShare += (accRewards * P) / lpSupply;
         pool.lastRewardTimestamp = lastTimestamp;
     }
 
@@ -159,7 +159,7 @@ contract DragonswapStaker is Ownable {
         updatePool(_pid);
 
         if (user.amount > 0) {
-            uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P1 - user.rewardDebt;
+            uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P - user.rewardDebt;
             rewardToken.safeTransfer(msg.sender, pendingRewards);
             rewardsPaidOut += pendingRewards;
             emit Payout(msg.sender, pendingRewards);
@@ -169,7 +169,7 @@ contract DragonswapStaker is Ownable {
         pool.totalDeposits += _amount;
 
         user.amount += _amount;
-        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
+        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P;
         emit Deposit(msg.sender, _pid, _amount);
     }
 
@@ -179,14 +179,14 @@ contract DragonswapStaker is Ownable {
         if (user.amount < _amount) revert UnauthorizedWithdrawal();
 
         updatePool(_pid);
-        uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P1 - user.rewardDebt;
+        uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P - user.rewardDebt;
 
         rewardToken.safeTransfer(msg.sender, pendingRewards);
         emit Payout(msg.sender, pendingRewards);
 
         rewardsPaidOut += pendingRewards;
         user.amount -= _amount;
-        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
+        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P;
         pool.totalDeposits -= _amount;
 
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
