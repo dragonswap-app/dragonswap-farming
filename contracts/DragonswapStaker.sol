@@ -137,7 +137,7 @@ contract DragonswapStaker is Ownable {
     function updatePool(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 lastTimestamp = block.timestamp < endTimestamp ? block.timestamp : endTimestamp;
-        if (lastTimestamp == pool.lastRewardTimestamp) return;
+        if (lastTimestamp <= pool.lastRewardTimestamp) return;
         uint256 lpSupply = pool.totalDeposits;
 
         if (lpSupply == 0) {
