@@ -1,0 +1,23 @@
+const { ethers } = require('hardhat');
+const { expect } = require('chai');
+
+describe('Project Tests', function () {
+  let deployer, users, token;
+
+  before(async () => {
+    [deployer, ...users] = await ethers.getSigners();
+
+    const tokenFactory = await ethers.getContractFactory('Token');
+    token = await tokenFactory.deploy();
+
+    await token.deployed();
+  });
+
+  it('Should', async function () {
+    const [user] = users;
+    const amount = ethers.utils.parseEther('10');
+    await token.transfer(user.address, amount);
+
+    expect(await token.balanceOf(user.address)).to.equal(amount);
+  });
+});
