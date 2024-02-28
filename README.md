@@ -1,5 +1,5 @@
-![Screenshot](cover.png)
-# Dragonswap Staking Contracts ![CI](https://github.com/dragonswap-app/dragonswap-farming/actions/workflows/ci.yml/badge.svg)
+![Screenshot](dsw_farm.jpg)
+# Dragonswap Farming Contracts ![CI](https://github.com/dragonswap-app/dragonswap-farming/actions/workflows/ci.yml/badge.svg)
 
 ## Setup
 
