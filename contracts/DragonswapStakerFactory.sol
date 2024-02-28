@@ -56,7 +56,7 @@ contract DragonswapStakerFactory is Ownable {
         // Set new implementation
         implBoosted = implementation;
         // Emit relevant event
-        emit ImplementationSet(implementation, Impl.CLASSIC);
+        emit ImplementationSet(implementation, Impl.BOOSTED);
     }
 
     /**
