@@ -48,6 +48,10 @@ contract DragonswapStaker is OwnableUpgradeable {
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(
         address _owner,
         IERC20 _rewardToken,
