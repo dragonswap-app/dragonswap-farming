@@ -59,6 +59,9 @@ contract DragonswapStakerFactory is Ownable {
         emit ImplementationSet(implementation, Impl.CLASSIC);
     }
 
+    /**
+     * @dev Deployment wrapper for classic staker implementation
+     */
     function deployClassic(address rewardToken, uint256 rewardPerSecond, uint256 startTimestamp) external onlyOwner {
         bytes memory data = abi.encodeWithSignature(
             "initialize(address,address,uint256,uint256)",
@@ -70,6 +73,9 @@ contract DragonswapStakerFactory is Ownable {
         deploy(data, Impl.CLASSIC);
     }
 
+    /**
+     * @dev Deployment wrapper for boosted staker implementation
+     */
     function deployBoosted(
         address rewardToken,
         address boostedToken,
@@ -86,6 +92,7 @@ contract DragonswapStakerFactory is Ownable {
         );
         deploy(data, Impl.BOOSTED);
     }
+
     /**
      * @dev Function to make a new deployment and initialize clone instance
      */
@@ -175,6 +182,9 @@ contract DragonswapStakerFactory is Ownable {
         }
     }
 
+    /**
+     * @dev See if a clone was deployed through this factory
+     */
     function isDeployedThroughFactory(address deployment) external view returns (bool) {
         return uint8(deploymentToImplType[deployment]) > 0;
     }
