@@ -4,8 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const { getJson, jsons, relativePath } = require('./utils');
 
-const contracts = ['Token'];
-const mainTree = ['master', 'staging', 'develop'];
+const contracts = ['DragonswapStaker', 'DragonswapStakerBoosted', 'DragonswapStakerFactory'];
+const mainTree = ['main', 'develop'];
 
 async function main() {
   await hre.run('compile');
