@@ -40,7 +40,7 @@ contract DragonswapStakerFactory is Ownable {
             revert ImplementationAlreadySet();
         }
         // Set new implementation
-        implClassic == implementation;
+        implClassic = implementation;
         // Emit relevant event
         emit ImplementationSet(implementation, Impl.CLASSIC);
     }
@@ -54,7 +54,7 @@ contract DragonswapStakerFactory is Ownable {
             revert ImplementationAlreadySet();
         }
         // Set new implementation
-        implBoosted == implementation;
+        implBoosted = implementation;
         // Emit relevant event
         emit ImplementationSet(implementation, Impl.CLASSIC);
     }
