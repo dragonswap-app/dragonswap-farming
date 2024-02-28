@@ -176,6 +176,6 @@ contract DragonswapStakerFactory is Ownable {
     }
 
     function isDeployedThroughFactory(address deployment) external view returns (bool) {
-        return uint8(deploymentToImplType[deployment]) > 0 ? true : false;
+        return uint8(deploymentToImplType[deployment]) > 0;
     }
 }
