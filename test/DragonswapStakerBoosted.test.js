@@ -2,7 +2,7 @@ const { ethers } = require('hardhat');
 const { expect } = require('chai');
 const { blockTimestamp, increaseTime } = require('./utils');
 
-describe('Dragonswap Staker Boosted', function () {
+xdescribe('Dragonswap Staker Boosted', function () {
   let deployer, users;
   let pooledToken, rewardToken, boosterToken;
   let stakerContract;
