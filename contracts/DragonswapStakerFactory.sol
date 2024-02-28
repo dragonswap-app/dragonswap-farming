@@ -24,9 +24,9 @@ contract DragonswapStakerFactory is Ownable {
     event ImplementationSet(address implementation, Impl impType);
 
     // Errors
+    error CloneCreationFailed();
     error ImplementationNotSet();
     error ImplementationAlreadySet();
-    error CloneCreationFailed();
     error InvalidIndexRange();
 
     constructor(address owner_) Ownable(owner_) {}
@@ -101,8 +101,8 @@ contract DragonswapStakerFactory is Ownable {
             revert ImplementationNotSet();
         }
 
-        // Newly deployed clone address will be stored inside of this variable
-        address clone;
+        // Newly deployed clone instance address will be stored inside of this variable
+        address instance;
 
         /// @solidity memory-safe-assembly
         assembly {
@@ -111,26 +111,26 @@ contract DragonswapStakerFactory is Ownable {
             mstore(0x00, or(shr(0xe8, shl(0x60, impl)), 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000))
             // Packs the remaining 17 bytes of `implementation` with the bytecode after the address.
             mstore(0x20, or(shl(0x78, impl), 0x5af43d82803e903d91602b57fd5bf3))
-            clone := create(0, 0x09, 0x37)
+            instance := create(0, 0x09, 0x37)
         }
         // Require that clone is created
-        if (clone == address(0)) {
+        if (instance == address(0)) {
             revert CloneCreationFailed();
         }
 
         // Mark sale as created through official factory
-        deploymentToImplType[clone] = implType;
+        deploymentToImplType[instance] = implType;
         // Add sale to allSales
-        deployments.push(clone);
+        deployments.push(instance);
 
         // Initialize
         if (data.length > 0) {
-            (bool success, ) = clone.call{value: msg.value}(data);
+            (bool success, ) = instance.call{value: msg.value}(data);
             if (!success) revert();
         }
 
         // Emit relevant event
-        emit Deployed(clone, implType);
+        emit Deployed(instance, implType);
     }
 
     /**
