@@ -25,6 +25,7 @@ contract DragonswapStakerFactory is Ownable {
         Impl indexed impType,
         address indexed rewardToken,
         address boosterToken,
+        uint256 rewardPerSecond,
         uint256 startTimestamp
     );
     event ImplementationSet(address implementation, Impl impType);
@@ -77,7 +78,7 @@ contract DragonswapStakerFactory is Ownable {
             startTimestamp
         );
         address instance = deploy(data, Impl.CLASSIC);
-        emit Deployed(instance, Impl.Classic, rewardToken, address(0), rewardPerSecond, startTimestamp);
+        emit Deployed(instance, Impl.CLASSIC, rewardToken, address(0), rewardPerSecond, startTimestamp);
     }
 
     /**
@@ -98,7 +99,7 @@ contract DragonswapStakerFactory is Ownable {
             startTimestamp
         );
         address instance = deploy(data, Impl.BOOSTED);
-        emit Deployed(instance, Impl.Boosted, rewardToken, boosterToken, rewardPerSecond, startTimestamp);
+        emit Deployed(instance, Impl.BOOSTED, rewardToken, boosterToken, rewardPerSecond, startTimestamp);
     }
 
     /**
