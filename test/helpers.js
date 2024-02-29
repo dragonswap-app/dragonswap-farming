@@ -8,8 +8,8 @@ const timeTravel = async (t) => {
     await ethers.provider.send('evm_increaseTime', [t]);
 };
 
-const mineBlock = async (n) => {
-    await ethers.provider.send('evm_mine', []);
+const mineBlock = async () => {
+    await ethers.provider.send('evm_mine');
 };
 
 const advanceTimeAndBlock = async (time) => {
