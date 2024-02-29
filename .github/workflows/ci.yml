@@ -32,8 +32,10 @@ jobs:
         run: yarn install
       - name: Lint
         run: yarn lint
-      - name: Run tests
-        run: yarn test
+      - name: Run tests staker
+        run: yarn test:staker
+      - name: Run tests stakerBoosted
+        run: yarn test:stakerBoosted
       - name: Update ABIs
         run: |
           node scripts/updateAbis.js
