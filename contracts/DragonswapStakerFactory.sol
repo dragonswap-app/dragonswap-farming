@@ -20,7 +20,13 @@ contract DragonswapStakerFactory is Ownable {
     address public implBoosted;
 
     // Events
-    event Deployed(address clone, Impl impType);
+    event Deployed(
+        address indexed instance,
+        Impl indexed impType,
+        address indexed rewardToken,
+        address boosterToken,
+        uint256 startTimestamp
+    );
     event ImplementationSet(address implementation, Impl impType);
 
     // Errors
@@ -70,7 +76,8 @@ contract DragonswapStakerFactory is Ownable {
             rewardPerSecond,
             startTimestamp
         );
-        deploy(data, Impl.CLASSIC);
+        address instance = deploy(data, Impl.CLASSIC);
+        emit Deployed(instance, Impl.Classic, rewardToken, address(0), rewardPerSecond, startTimestamp);
     }
 
     /**
@@ -78,7 +85,7 @@ contract DragonswapStakerFactory is Ownable {
      */
     function deployBoosted(
         address rewardToken,
-        address boostedToken,
+        address boosterToken,
         uint256 rewardPerSecond,
         uint256 startTimestamp
     ) external onlyOwner {
@@ -86,17 +93,18 @@ contract DragonswapStakerFactory is Ownable {
             "initialize(address,address,address,uint256,uint256)",
             owner(),
             rewardToken,
-            boostedToken,
+            boosterToken,
             rewardPerSecond,
             startTimestamp
         );
-        deploy(data, Impl.BOOSTED);
+        address instance = deploy(data, Impl.BOOSTED);
+        emit Deployed(instance, Impl.Boosted, rewardToken, boosterToken, rewardPerSecond, startTimestamp);
     }
 
     /**
      * @dev Function to make a new deployment and initialize clone instance
      */
-    function deploy(bytes memory data, Impl implType) private {
+    function deploy(bytes memory data, Impl implType) private returns (address instance) {
         address impl = implType == Impl.CLASSIC
             ? implClassic
             : implType == Impl.BOOSTED
@@ -107,9 +115,6 @@ contract DragonswapStakerFactory is Ownable {
         if (impl == address(0)) {
             revert ImplementationNotSet();
         }
-
-        // Newly deployed clone instance address will be stored inside of this variable
-        address instance;
 
         /// @solidity memory-safe-assembly
         assembly {
@@ -135,9 +140,6 @@ contract DragonswapStakerFactory is Ownable {
             (bool success, ) = instance.call{value: msg.value}(data);
             if (!success) revert();
         }
-
-        // Emit relevant event
-        emit Deployed(instance, implType);
     }
 
     /**

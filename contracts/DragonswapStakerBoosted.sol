@@ -58,6 +58,8 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Fund(address indexed funder, uint256 rewardAmount, uint256 boosterAmount);
+    event Added(uint256 indexed pid, address indexed pooledToken, uint256 allocPoint);
+    event Set(uint256 indexed pid, uint256 allocPoint);
     event Payout(address indexed user, uint256 pendingReward, uint256 pendingBooster);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -130,21 +132,23 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         emit Fund(msg.sender, rewardAmount, boosterAmount);
     }
 
-    function add(uint256 _allocPoint, IERC20 _pooledToken, bool _withUpdate) external onlyOwner {
+    function add(uint256 _allocPoint, address _pooledToken, bool _withUpdate) external onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
         }
+        if (_pooledToken == address(0)) revert();
         uint256 lastRewardTimestamp = block.timestamp > startTimestamp ? block.timestamp : startTimestamp;
         totalAllocPoint += _allocPoint;
         poolInfo.push(
             PoolInfo({
-                pooledToken: _pooledToken,
+                pooledToken: IERC20(_pooledToken),
                 allocPoint: _allocPoint,
                 lastRewardTimestamp: lastRewardTimestamp,
                 accRewardsPerShare: 0,
                 totalDeposits: 0
             })
         );
+        emit Added(poolInfo.length - 1, _pooledToken, _allocPoint);
     }
 
     function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) external onlyOwner {
@@ -153,6 +157,7 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         }
         totalAllocPoint -= poolInfo[_pid].allocPoint + _allocPoint;
         poolInfo[_pid].allocPoint = _allocPoint;
+        emit Set(_pid, _allocPoint);
     }
 
     // View function to see deposited LP for a user.
