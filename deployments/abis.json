@@ -93,6 +93,31 @@
         "inputs": [
           {
             "indexed": true,
+            "internalType": "uint256",
+            "name": "pid",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "pooledToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "allocPoint",
+            "type": "uint256"
+          }
+        ],
+        "name": "Added",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "user",
             "type": "address"
@@ -213,6 +238,25 @@
         "inputs": [
           {
             "indexed": true,
+            "internalType": "uint256",
+            "name": "pid",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "allocPoint",
+            "type": "uint256"
+          }
+        ],
+        "name": "Set",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "user",
             "type": "address"
@@ -254,7 +298,7 @@
             "type": "uint256"
           },
           {
-            "internalType": "contract IERC20",
+            "internalType": "address",
             "name": "_pooledToken",
             "type": "address"
           },
@@ -760,6 +804,31 @@
         "inputs": [
           {
             "indexed": true,
+            "internalType": "uint256",
+            "name": "pid",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "pooledToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "allocPoint",
+            "type": "uint256"
+          }
+        ],
+        "name": "Added",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "user",
             "type": "address"
@@ -892,6 +961,25 @@
         "inputs": [
           {
             "indexed": true,
+            "internalType": "uint256",
+            "name": "pid",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "allocPoint",
+            "type": "uint256"
+          }
+        ],
+        "name": "Set",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "user",
             "type": "address"
@@ -946,7 +1034,7 @@
             "type": "uint256"
           },
           {
-            "internalType": "contract IERC20",
+            "internalType": "address",
             "name": "_pooledToken",
             "type": "address"
           },
@@ -1517,16 +1605,40 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
-            "name": "clone",
+            "name": "instance",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "enum DragonswapStakerFactory.Impl",
+            "name": "impType",
+            "type": "uint8"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "rewardToken",
             "type": "address"
           },
           {
             "indexed": false,
-            "internalType": "enum DragonswapStakerFactory.Impl",
-            "name": "impType",
-            "type": "uint8"
+            "internalType": "address",
+            "name": "boosterToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "rewardPerSecond",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "startTimestamp",
+            "type": "uint256"
           }
         ],
         "name": "Deployed",
@@ -1579,7 +1691,7 @@
           },
           {
             "internalType": "address",
-            "name": "boostedToken",
+            "name": "boosterToken",
             "type": "address"
           },
           {
