@@ -4,9 +4,6 @@
 
 ## Setup
 
-### Git config
-`$ git config url."https://".insteadOf git://`
-
 ### Dependencies
 - `$ nvm use`
 - `$ yarn`
