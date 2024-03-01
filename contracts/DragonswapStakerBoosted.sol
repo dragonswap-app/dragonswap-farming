@@ -5,9 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-error FarmClosed();
-error UnauthorizedWithdrawal();
-
 interface IERC20Metadata {
     function decimals() external view returns (uint8);
 }
@@ -64,6 +61,10 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
+    error FarmClosed();
+    error UnauthorizedWithdrawal();
+    error InvalidValue();
+
     constructor() {
         _disableInitializers();
     }
@@ -101,6 +102,7 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
 
     function fund(uint256 rewardAmount, uint256 boosterAmount) external {
         if (block.timestamp >= endTimestamp) revert FarmClosed();
+        if (rewardAmount == 0 || boosterAmount == 0) revert InvalidValue();
         // Transfer tokens optimistically and use allowance
         rewardToken.safeTransferFrom(msg.sender, address(this), rewardAmount);
         boosterToken.safeTransferFrom(msg.sender, address(this), boosterAmount);
@@ -136,7 +138,7 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         if (_withUpdate) {
             massUpdatePools();
         }
-        if (_pooledToken == address(0)) revert();
+        if (_pooledToken == address(0)) revert InvalidValue();
         uint256 lastRewardTimestamp = block.timestamp > startTimestamp ? block.timestamp : startTimestamp;
         totalAllocPoint += _allocPoint;
         poolInfo.push(

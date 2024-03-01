@@ -5,9 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-error FarmClosed();
-error UnauthorizedWithdrawal();
-
 contract DragonswapStaker is OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
@@ -49,6 +46,9 @@ contract DragonswapStaker is OwnableUpgradeable {
     event Payout(address indexed user, uint256 pendingReward);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
+
+    error FarmClosed();
+    error UnauthorizedWithdrawal();
 
     constructor() {
         _disableInitializers();
