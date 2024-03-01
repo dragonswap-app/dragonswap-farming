@@ -5,8 +5,8 @@ const hre = require('hardhat');
 const {parseUnits} = require("ethers/lib/utils");
 
 describe('DragonswapStaker', () => {
-    let stake1Token, stake2Token, rewardToken, rewardTokenDecimals,  boosterToken, boosterTokenDecimals;
-    let rewardAmount, rewardAmountWei, boosterAmount, boosterAmountWei, rewardPerSecond, rewardPerSecondWei;
+    let stake1Token, stake2Token, rewardToken, rewardTokenDecimals;
+    let rewardAmount, rewardAmountWei, rewardPerSecond, rewardPerSecondWei;
     let startTimestamp;
     let farm;
     let owner, alice, bob, carl, users;
