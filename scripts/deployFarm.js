@@ -6,7 +6,6 @@ const {currentTimestamp} = require("../test/helpers");
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 async function main() {
-    await hre.run('compile');
 
     const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[hre.network.name][
         'DragonswapStakerFactory'
@@ -17,7 +16,7 @@ async function main() {
     );
 
     if(await dragonswapStakerFactory.implClassic() === ZERO_ADDRESS) {
-        const stakerFarmImplFactory = await hre.ethers.getContractFactory('DragonswapStakerFarm');
+        const stakerFarmImplFactory = await hre.ethers.getContractFactory('DragonswapStaker');
         const stakerFarmImplClassic = await stakerFarmImplFactory.deploy();
         await stakerFarmImplClassic.deployed();
         console.log(`DragonswapStaker address: ${stakerFarmImplClassic.address}`);
@@ -29,7 +28,8 @@ async function main() {
             stakerFarmImplClassic.address
         );
 
-        await dragonswapStakerFactory.setImplClassic(stakerFarmImplClassic.address);
+        await dragonswapStakerFactory.setImplementationClassic(stakerFarmImplClassic.address);
+        console.log('Classic implementation set on factory');
     }
 
     const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['PYTH'];
@@ -51,11 +51,16 @@ async function main() {
 
     const stakerFarm = await hre.ethers.getContractAt('DragonswapStaker', stakerFarmTxReceipt.logs[0].address)
 
+    console.log("Staker farm address: ", stakerFarm.address);
+
     await stakerFarm.add(100, tokenToStakeAddress, false)
+
+    console.log("Staking pool added");
 
     await rewardToken.approve(stakerFarm.address, rewardAmount)
 
     await stakerFarm.fund(rewardAmount)
+    console.log("Funded staker farm");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

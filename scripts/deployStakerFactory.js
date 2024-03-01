@@ -3,8 +3,6 @@ const { getJson, saveJson, jsons } = require('./utils');
 const { ethers } = require('hardhat');
 
 async function main() {
-    await hre.run('compile');
-
     const myWallet = await hre.ethers.getSigner();
     const myWalletAddress = await myWallet.getAddress();
 

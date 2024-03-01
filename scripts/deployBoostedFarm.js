@@ -6,7 +6,6 @@ const {currentTimestamp} = require("../test/helpers");
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 async function main() {
-    await hre.run('compile');
 
     const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[hre.network.name][
         'DragonswapStakerFactory'
@@ -17,7 +16,7 @@ async function main() {
     );
 
     if(await dragonswapStakerFactory.implBoosted() === ZERO_ADDRESS) {
-        const stakerFarmImplFactory = await hre.ethers.getContractFactory('DragonswapStakerFarm');
+        const stakerFarmImplFactory = await hre.ethers.getContractFactory('DragonswapStakerBoosted');
         const stakerFarmImplBoosted = await stakerFarmImplFactory.deploy();
         await stakerFarmImplBoosted.deployed();
         console.log(`DragonswapStakerBoosted address: ${stakerFarmImplBoosted.address}`);
@@ -29,7 +28,8 @@ async function main() {
             stakerFarmImplBoosted.address
         );
 
-        await dragonswapStakerFactory.setImplBoosted(stakerFarmImplBoosted.address);
+        await dragonswapStakerFactory.setImplementationBoosted(stakerFarmImplBoosted.address);
+        console.log('Boosted implementation set on factory');
     }
 
     const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['USDC'];
@@ -54,14 +54,21 @@ async function main() {
 
     const stakerBoostedFarmTxReceipt = await stakerBoostedFarmTx.wait()
 
-    const stakerBoostedFarm = await hre.ethers.getContractAt('DragonswapStaker', stakerBoostedFarmTxReceipt.logs[0].address)
+    const stakerBoostedFarm = await hre.ethers.getContractAt('DragonswapStakerBoosted', stakerBoostedFarmTxReceipt.logs[0].address)
+
+    console.log("StakerBoosted farm address: ", stakerBoostedFarm.address);
 
     await stakerBoostedFarm.add(100, tokenToStakeAddress, false)
+
+    console.log('Added pool to stakerBoosted farm');
 
     await rewardToken.approve(stakerBoostedFarm.address, rewardAmount)
     await boostedToken.approve(stakerBoostedFarm.address, boostedAmount)
 
     await stakerBoostedFarm.fund(rewardAmount, boostedAmount)
+
+    console.log('StakerBoosted farm funded');
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
