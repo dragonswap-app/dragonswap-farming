@@ -758,6 +758,11 @@
       },
       {
         "inputs": [],
+        "name": "InvalidValue",
+        "type": "error"
+      },
+      {
+        "inputs": [],
         "name": "NotInitializing",
         "type": "error"
       },
