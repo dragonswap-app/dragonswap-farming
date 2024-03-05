@@ -1,8 +1,10 @@
 {
   "mainnet": {},
   "testnet": {
-    "DragonswapStakerFactory": "0x3148E07839889CA905eFE5ecaD73B830B9e138c5",
-    "DragonswapStakerImplClassic": "0xcf38Eb858d27F9BbBA0CbC02192710Ba01b5d523",
-    "DragonswapStakerImplBoosted": "0xC2679BEff22F89906513Be528E209a9350CB136d"
+    "DragonswapStakerFactory": "0xa78054151202B7d7A9D7A0997d5E937FE4284d2c",
+    "DragonswapStakerImplClassic": "0x34FA1d93fc71a1739dA05BE4D773A49831584E95",
+    "DragonswapStakerImplBoosted": "0xbd9df12b1417c7c3Fb99f2230aD0221BBCBb3cc6",
+    "DragonswapStaker": "0x4a03d6bFE2EEe02cBc8aBCee6332f7f476AE22fe",
+    "DragonswapStakerBoosted": "0x1DD2d451109f8D56f736056EF2d3463a36F51eDE"
   }
 }

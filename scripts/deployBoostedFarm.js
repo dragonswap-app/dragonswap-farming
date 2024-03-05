@@ -1,9 +1,10 @@
 const hre = require('hardhat');
-const { getJson, saveJson, jsons } = require('./utils');
+const { getJson, saveJson, sleep, jsons } = require('./utils');
 const { ethers } = require('hardhat');
 const {currentTimestamp} = require("../test/helpers");
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const wait = async () => {await sleep(3000)};
 
 async function main() {
 
@@ -56,14 +57,26 @@ async function main() {
 
     const stakerBoostedFarm = await hre.ethers.getContractAt('DragonswapStakerBoosted', stakerBoostedFarmTxReceipt.logs[0].address)
 
+    saveJson(
+        jsons.addresses,
+        hre.network.name,
+        'DragonswapStakerBoosted',
+        stakerBoostedFarm.address
+    );
+
     console.log("StakerBoosted farm address: ", stakerBoostedFarm.address);
+
+    await wait();
 
     await stakerBoostedFarm.add(100, tokenToStakeAddress, false)
 
     console.log('Added pool to stakerBoosted farm');
 
     await rewardToken.approve(stakerBoostedFarm.address, rewardAmount)
+    await wait();
     await boostedToken.approve(stakerBoostedFarm.address, boostedAmount)
+
+    await wait();
 
     await stakerBoostedFarm.fund(rewardAmount, boostedAmount)
 
