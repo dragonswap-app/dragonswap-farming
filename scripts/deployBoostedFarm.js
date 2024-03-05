@@ -41,10 +41,10 @@ async function main() {
     const boostedTokenAddress = getJson(jsons.config)[hre.network.name]['GLO'];
     const boostedToken = await hre.ethers.getContractAt('Token', boostedTokenAddress);
 
-    const rewardPerSecond = ethers.utils.parseEther('10');
+    const rewardPerSecond = ethers.utils.parseEther('0.0858148148148');
     const startTimestamp = await currentTimestamp() + 120;
-    const rewardAmount = ethers.utils.parseUnits('1000000', await rewardToken.decimals());
-    const boostedAmount = ethers.utils.parseUnits('1500000', await boostedToken.decimals());
+    const rewardAmount = ethers.utils.parseUnits('60000', await rewardToken.decimals());
+    const boostedAmount = ethers.utils.parseUnits('80000', await boostedToken.decimals());
 
     const stakerBoostedFarmTx = await dragonswapStakerFactory.deployBoosted(
         rewardToken.address,

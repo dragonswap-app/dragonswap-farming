@@ -38,9 +38,9 @@ async function main() {
     const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['DSWAP'];
     const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
 
-    const rewardPerSecond = ethers.utils.parseEther('10');
+    const rewardPerSecond = ethers.utils.parseEther('0.0023148148148148');
     const startTimestamp = await currentTimestamp() + 120;
-    const rewardAmount = ethers.utils.parseUnits('1000000', await rewardToken.decimals());
+    const rewardAmount = ethers.utils.parseUnits('50000', await rewardToken.decimals());
 
     const stakerFarmTx = await dragonswapStakerFactory.deployClassic(
         rewardToken.address,
