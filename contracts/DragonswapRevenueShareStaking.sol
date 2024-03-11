@@ -170,7 +170,7 @@ contract DragonswapRevenueShareStaking is Ownable {
      * @param _depositFeePercent The new deposit fee percent
      */
     function setDepositFeePercent(uint256 _depositFeePercent) external onlyOwner {
-        if(_depositFeePercent > 2_000) revert InvalidValue();
+        if (_depositFeePercent > 2_000) revert InvalidValue();
         depositFeePercent = _depositFeePercent;
         emit DepositFeeSet(_depositFeePercent);
     }

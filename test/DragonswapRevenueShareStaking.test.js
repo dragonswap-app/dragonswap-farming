@@ -1,7 +1,6 @@
 const { ethers, network } = require("hardhat");
 const { expect } = require("chai");
 const { describe } = require("mocha");
-const hre = require("hardhat");
 
 describe("Dragonswap Revenue-share Staking", () => {
   before(async () => {

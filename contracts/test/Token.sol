@@ -7,8 +7,11 @@ contract Token is ERC20 {
     uint8 private tokenDecimals;
 
     constructor(string memory _name, string memory _symbol, uint8 _decimals) ERC20(_name, _symbol) {
-        _mint(msg.sender, 100_000_000 * 1e18);
         tokenDecimals = _decimals;
+    }
+
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
     }
 
     function decimals() public view virtual override returns (uint8) {
