@@ -109,9 +109,9 @@ contract DragonswapRevenueShareStaking is Ownable {
             user.rewardDebt[token] = currentAmount * _accRewardsPerShare / P;
 
             if (previousAmount != 0) {
-                uint256 _pending = previousAmount * _accRewardsPerShare / P - previousRewardDebt;
-                token.safeTransfer(msg.sender, _pending);
-                emit Payout(msg.sender, token, _pending);
+                uint256 pending = previousAmount * _accRewardsPerShare / P - previousRewardDebt;
+                _payout(token, msg.sender, pending);
+                emit Payout(msg.sender, token, pending);
             }
         }
 
@@ -200,7 +200,7 @@ contract DragonswapRevenueShareStaking is Ownable {
         uint256 _accRewardTokenPerShare = accRewardsPerShare[_token];
 
         uint256 _currRewardBalance = _token.balanceOf(address(this));
-        uint256 _rewardBalance = _token == dragon ? _currRewardBalance - _totalDeposits : _currRewardBalance;
+        uint256 _rewardBalance = _token == dragon ? _currRewardBalance - _totalDeposits - fees : _currRewardBalance;
 
         if (_rewardBalance != lastRewardBalance[_token] && _totalDeposits != 0) {
             uint256 _accruedReward = _rewardBalance - lastRewardBalance[_token];
@@ -234,12 +234,12 @@ contract DragonswapRevenueShareStaking is Ownable {
                 _updateAccumulated(token);
 
                 uint256 _accRewardsPerShare = accRewardsPerShare[token];
-                uint256 _pending = previousAmount * _accRewardsPerShare / P - user.rewardDebt[token];
+                uint256 pending = previousAmount * _accRewardsPerShare / P - user.rewardDebt[token];
                 user.rewardDebt[token] = newAmount * _accRewardsPerShare / P;
 
-                if (_pending != 0) {
-                    token.safeTransfer(msg.sender, _pending);
-                    emit Payout(msg.sender, token, _pending);
+                if (pending != 0) {
+                    _payout(token, msg.sender, pending);
+                    emit Payout(msg.sender, token, pending);
                 }
             }
         }
@@ -288,6 +288,14 @@ contract DragonswapRevenueShareStaking is Ownable {
 
         accRewardsPerShare[token] += (rewardBalance - _lastRewardBalance) * P / _totalDeposits;
         lastRewardBalance[token] = rewardBalance;
+    }
+
+    function _payout(IERC20 token, address to, uint256 pending) private {
+        uint256 currRewardBalance = token.balanceOf(address(this));
+        uint256 rewardBalance = token == dragon ? currRewardBalance - totalDeposits - fees : currRewardBalance;
+        uint256 amount = pending > rewardBalance ? rewardBalance : pending;
+        lastRewardBalance[token] -= amount;
+        token.safeTransfer(to, amount);
     }
 
     /**
