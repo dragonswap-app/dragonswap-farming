@@ -693,11 +693,30 @@ describe("Dragonswap Revenue-share Staking", () => {
       ).to.be.equal(
         ethers.utils.parseEther("97").add(ethers.utils.parseEther("80"))
       );
+
+      const accumulatedFees = ethers.utils.parseEther("3").add(ethers.utils.parseEther("20"));
+
+      const dragonStakerBalance = await this.dragon.balanceOf(this.dragonStaker.address);
+
       expect(
         await this.dragonStaker.fees()
       ).to.be.equal(
-        ethers.utils.parseEther("3").add(ethers.utils.parseEther("20"))
+        accumulatedFees
       );
+
+      await this.dragonStaker.connect(this.dev).withdrawFees();
+
+      expect(
+        await this.dragonStaker.fees()
+      ).to.be.equal(0);
+
+      expect(
+        await this.dragon.balanceOf(this.treasury.address)
+      ).to.be.equal(accumulatedFees);
+
+      expect(
+        await this.dragon.balanceOf(this.dragonStaker.address)
+      ).to.be.equal(dragonStakerBalance.sub(accumulatedFees));
     });
 
     it("should allow emergency withdraw", async () => {
