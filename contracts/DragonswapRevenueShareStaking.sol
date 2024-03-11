@@ -37,7 +37,7 @@ contract DragonswapRevenueShareStaking is Ownable {
     mapping(address => UserInfo) private userInfo;
 
     /// @notice The precision of `accRewardsPerShare`
-    uint256 public constant P = 1e24;
+    uint256 public constant P = 1e36;
 
     /// Events
     event Deposit(address indexed user, uint256 amount, uint256 fee);
@@ -110,8 +110,7 @@ contract DragonswapRevenueShareStaking is Ownable {
 
             if (previousAmount != 0) {
                 uint256 pending = previousAmount * _accRewardsPerShare / P - previousRewardDebt;
-                _payout(token, msg.sender, pending);
-                emit Payout(msg.sender, token, pending);
+                _payout(token, pending);
             }
         }
 
@@ -136,13 +135,12 @@ contract DragonswapRevenueShareStaking is Ownable {
 
     /**
      * @notice Add a reward token
-     * @dev Cannot re-add tokens once removed
+     * @dev Cannot re-add reward tokens once removed
      * @param _rewardToken The address of the reward token
      */
     function addRewardToken(IERC20 _rewardToken) external onlyOwner {
-        if (isRewardToken[_rewardToken]) revert AlreadyAdded();
+        if (isRewardToken[_rewardToken] || accRewardsPerShare[_rewardToken] != 0) revert AlreadyAdded();
         if (address(_rewardToken) == address(0)) revert InvalidAddress();
-        if (accRewardsPerShare[_rewardToken] != 0) revert();
 
         rewardTokens.push(_rewardToken);
         isRewardToken[_rewardToken] = true;
@@ -190,23 +188,23 @@ contract DragonswapRevenueShareStaking is Ownable {
     /**
      * @notice View function to see pending reward token on frontend
      * @param _user The address of the user
-     * @param _token The address of the token
+     * @param token The address of the token
      * @return `_user`'s pending reward token
      */
-    function pendingRewards(address _user, IERC20 _token) external view returns (uint256) {
-        if (!isRewardToken[_token]) revert InvalidValue();
+    function pendingRewards(address _user, IERC20 token) external view returns (uint256) {
+        if (!isRewardToken[token]) revert InvalidValue();
         UserInfo storage user = userInfo[_user];
         uint256 _totalDeposits = totalDeposits;
-        uint256 _accRewardTokenPerShare = accRewardsPerShare[_token];
+        uint256 _accRewardTokenPerShare = accRewardsPerShare[token];
 
-        uint256 _currRewardBalance = _token.balanceOf(address(this));
-        uint256 _rewardBalance = _token == dragon ? _currRewardBalance - _totalDeposits - fees : _currRewardBalance;
+        uint256 currRewardBalance = token.balanceOf(address(this));
+        uint256 rewardBalance = token == dragon ? currRewardBalance - _totalDeposits - fees : currRewardBalance;
 
-        if (_rewardBalance != lastRewardBalance[_token] && _totalDeposits != 0) {
-            uint256 _accruedReward = _rewardBalance - lastRewardBalance[_token];
-            _accRewardTokenPerShare += _accruedReward * P / _totalDeposits;
+        if (rewardBalance != lastRewardBalance[token] && _totalDeposits != 0) {
+            uint256 accruedReward = rewardBalance - lastRewardBalance[token];
+            _accRewardTokenPerShare += accruedReward * P / _totalDeposits;
         }
-        return user.amount * _accRewardTokenPerShare / P - user.rewardDebt[_token];
+        return user.amount * _accRewardTokenPerShare / P - user.rewardDebt[token];
     }
 
     function withdrawFees() external onlyOwner {
@@ -238,8 +236,7 @@ contract DragonswapRevenueShareStaking is Ownable {
                 user.rewardDebt[token] = newAmount * _accRewardsPerShare / P;
 
                 if (pending != 0) {
-                    _payout(token, msg.sender, pending);
-                    emit Payout(msg.sender, token, pending);
+                    _payout(token, pending);
                 }
             }
         }
@@ -290,12 +287,13 @@ contract DragonswapRevenueShareStaking is Ownable {
         lastRewardBalance[token] = rewardBalance;
     }
 
-    function _payout(IERC20 token, address to, uint256 pending) private {
+    function _payout(IERC20 token, uint256 pending) private {
         uint256 currRewardBalance = token.balanceOf(address(this));
         uint256 rewardBalance = token == dragon ? currRewardBalance - totalDeposits - fees : currRewardBalance;
         uint256 amount = pending > rewardBalance ? rewardBalance : pending;
         lastRewardBalance[token] -= amount;
-        token.safeTransfer(to, amount);
+        token.safeTransfer(msg.sender, amount);
+        emit Payout(msg.sender, token, pending);
     }
 
     /**
