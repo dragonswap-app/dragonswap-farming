@@ -157,7 +157,7 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         if (_withUpdate) {
             massUpdatePools();
         }
-        totalAllocPoint -= poolInfo[_pid].allocPoint + _allocPoint;
+        totalAllocPoint = totalAllocPoint - poolInfo[_pid].allocPoint + _allocPoint;
         poolInfo[_pid].allocPoint = _allocPoint;
         emit Set(_pid, _allocPoint);
     }
