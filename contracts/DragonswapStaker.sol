@@ -49,6 +49,7 @@ contract DragonswapStaker is OwnableUpgradeable {
 
     error FarmClosed();
     error UnauthorizedWithdrawal();
+    error InvalidValue();
 
     constructor() {
         _disableInitializers();
@@ -83,7 +84,7 @@ contract DragonswapStaker is OwnableUpgradeable {
         if (_withUpdate) {
             massUpdatePools();
         }
-        if (_pooledToken == address(0)) revert();
+        if (_pooledToken == address(0)) revert InvalidValue();
         uint256 lastRewardTimestamp = block.timestamp > startTimestamp ? block.timestamp : startTimestamp;
         totalAllocPoint += _allocPoint;
         poolInfo.push(
@@ -169,9 +170,11 @@ contract DragonswapStaker is OwnableUpgradeable {
 
         if (user.amount > 0) {
             uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P - user.rewardDebt;
-            rewardToken.safeTransfer(msg.sender, pendingRewards);
-            rewardsPaidOut += pendingRewards;
-            emit Payout(msg.sender, pendingRewards);
+            if (pendingRewards > 0) {
+                rewardToken.safeTransfer(msg.sender, pendingRewards);
+                rewardsPaidOut += pendingRewards;
+                emit Payout(msg.sender, pendingRewards);
+            }
         }
 
         pool.pooledToken.safeTransferFrom(address(msg.sender), address(this), _amount);
@@ -188,12 +191,14 @@ contract DragonswapStaker is OwnableUpgradeable {
         if (user.amount < _amount) revert UnauthorizedWithdrawal();
 
         updatePool(_pid);
+
         uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P - user.rewardDebt;
+        if (pendingRewards > 0) {
+            rewardToken.safeTransfer(msg.sender, pendingRewards);
+            rewardsPaidOut += pendingRewards;
+            emit Payout(msg.sender, pendingRewards);
+        }
 
-        rewardToken.safeTransfer(msg.sender, pendingRewards);
-        emit Payout(msg.sender, pendingRewards);
-
-        rewardsPaidOut += pendingRewards;
         user.amount -= _amount;
         user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P;
         pool.totalDeposits -= _amount;
