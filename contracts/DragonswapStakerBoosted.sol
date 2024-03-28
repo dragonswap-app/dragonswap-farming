@@ -27,27 +27,19 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
 
     IERC20 public rewardToken;
     IERC20 public boosterToken;
-
     uint256 public decimalEqReward;
     uint256 public decimalEqBooster;
-
     uint256 public totalRewards;
     uint256 public totalBooster;
     uint256 public rewardsPaidOut;
     uint256 public boosterPaidOut;
-
     uint256 public ratio;
-
     uint256 public rewardPerSecond;
     uint256 public totalAllocPoint;
-
     uint256 public startTimestamp;
     uint256 public endTimestamp;
-
     PoolInfo[] public poolInfo;
-
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
-
     // Precision constant used for accumulated rewards per share
     uint256 public constant P1 = 1e18;
     // Precision constant used for reward/booster ratio
@@ -121,13 +113,9 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
             ratio = inputRatio;
             appliedRatio = inputRatio;
         } else if (inputRatio > appliedRatio) {
-            uint256 rewardAmountChange = rewardAmount - (boosterAmount * appliedRatio) / P2;
-            rewardReturn = rewardAmountChange / decimalEqReward;
-            rewardAmount -= rewardAmountChange;
+            rewardReturn = rewardAmount - (boosterAmount * appliedRatio) / P2;
         } else if (inputRatio < appliedRatio) {
-            uint256 boosterAmountChange = boosterAmount - (rewardAmount * P2) / appliedRatio;
-            boosterReturn = boosterAmountChange / decimalEqBooster;
-            boosterAmount -= boosterAmountChange;
+            boosterReturn = boosterAmount  - (rewardAmount * P2) / appliedRatio;
         }
 
         rewardAmount /= decimalEqReward;
@@ -139,15 +127,16 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         uint256 boosterLeftover;
 
         if (leftover > 0) {
-            rewardAmount -= leftover;
             rewardReturn += leftover;
 
             boosterLeftover = leftover * P2 / appliedRatio;
             if (boosterLeftover > 0) {
-                boosterAmount -= boosterLeftover;
                 boosterReturn += boosterLeftover;
             }
         }
+
+        rewardAmount -= rewardReturn;
+        boosterAmount -= boosterReturn;
 
         totalRewards += rewardAmount;
         totalBooster += boosterAmount;
