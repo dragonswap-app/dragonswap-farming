@@ -110,26 +110,51 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         rewardAmount *= decimalEqReward;
         boosterAmount *= decimalEqBooster;
 
+        uint256 rewardReturn;
+        uint256 boosterReturn;
+
         uint256 inputRatio = (P2 * rewardAmount) / boosterAmount;
         // Gas optimization
         uint256 appliedRatio = ratio;
         if (appliedRatio == 0) {
+            _checkOwner();
             ratio = inputRatio;
+            appliedRatio = inputRatio;
         } else if (inputRatio > appliedRatio) {
             uint256 rewardAmountChange = rewardAmount - (boosterAmount * appliedRatio) / P2;
-            rewardToken.safeTransfer(msg.sender, rewardAmountChange / decimalEqReward);
+            rewardReturn = rewardAmountChange / decimalEqReward;
             rewardAmount -= rewardAmountChange;
         } else if (inputRatio < appliedRatio) {
             uint256 boosterAmountChange = boosterAmount - (rewardAmount * P2) / appliedRatio;
-            boosterToken.safeTransfer(msg.sender, boosterAmountChange / decimalEqBooster);
+            boosterReturn = boosterAmountChange / decimalEqBooster;
             boosterAmount -= boosterAmountChange;
         }
+
         rewardAmount /= decimalEqReward;
         boosterAmount /= decimalEqBooster;
-
         endTimestamp += rewardAmount / rewardPerSecond;
+
+        // Return the leftover
+        uint256 leftover = rewardAmount % rewardPerSecond;
+        uint256 boosterLeftover;
+
+        if (leftover > 0) {
+            rewardAmount -= leftover;
+            rewardReturn += leftover;
+
+            boosterLeftover = leftover * P2 / appliedRatio;
+            if (boosterLeftover > 0) {
+                boosterAmount -= boosterLeftover;
+                boosterReturn += boosterLeftover;
+            }
+        }
+
         totalRewards += rewardAmount;
         totalBooster += boosterAmount;
+
+        // Return change
+        if (rewardReturn > 0) rewardToken.safeTransfer(msg.sender, rewardReturn);
+        if (boosterReturn > 0) boosterToken.safeTransfer(msg.sender, boosterReturn);
 
         emit Fund(msg.sender, rewardAmount, boosterAmount);
     }
