@@ -11,6 +11,8 @@ describe('DragonswapStakerBoosted', () => {
     let boostedFarm;
     let owner, alice, bob, carl, users;
 
+    const MintAmount = ethers.utils.parseEther("1000000000");
+
     // Initialize users
     before(async () => {
         [owner, alice, bob, carl, ...users] = await ethers.getSigners();
@@ -20,17 +22,21 @@ describe('DragonswapStakerBoosted', () => {
     before(async () => {
         const tokenFactory = await hre.ethers.getContractFactory('Token');
 
-        stake1Token = await tokenFactory.connect(owner).deploy("Dragonswap1", "DLP1", 18)
-        await stake1Token.deployed()
+        stake1Token = await tokenFactory.connect(owner).deploy("Dragonswap1", "DLP1", 18);
+        await stake1Token.deployed();
+        await stake1Token.mint(owner.address, MintAmount);
 
-        stake2Token = await tokenFactory.connect(owner).deploy("Dragonswap2", "DLP2", 18)
-        await stake2Token.deployed()
+        stake2Token = await tokenFactory.connect(owner).deploy("Dragonswap2", "DLP2", 18);
+        await stake2Token.deployed();
+        await stake2Token.mint(owner.address, MintAmount);
 
         rewardToken = await tokenFactory.connect(owner).deploy("RewardToken", "RWRD", 18);
         await rewardToken.deployed();
+        await rewardToken.mint(owner.address, MintAmount);
 
-        boosterToken = await tokenFactory.connect(owner).deploy("BoosterToken", "BSTR", 6)
+        boosterToken = await tokenFactory.connect(owner).deploy("BoosterToken", "BSTR", 6);
         await boosterToken.deployed();
+        await boosterToken.mint(owner.address, MintAmount);
     });
 
     // Initialize farm
