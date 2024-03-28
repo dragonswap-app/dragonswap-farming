@@ -72,8 +72,10 @@ contract DragonswapStaker is OwnableUpgradeable {
         rewardAmount = _safeTransferFrom(rewardToken, rewardAmount);
         endTimestamp += rewardAmount / rewardPerSecond;
         uint256 leftover = rewardAmount % rewardPerSecond;
-        rewardAmount -= leftover;
-        if (leftover > 0) rewardToken.safeTransfer(msg.sender, leftover);
+        if (leftover > 0) {
+            rewardAmount -= leftover;
+            rewardToken.safeTransfer(msg.sender, leftover);
+        }
         totalRewards += rewardAmount;
         emit Fund(msg.sender, rewardAmount);
     }
