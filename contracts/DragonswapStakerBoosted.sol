@@ -96,8 +96,8 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         if (block.timestamp >= endTimestamp) revert FarmClosed();
         if (rewardAmount == 0 || boosterAmount == 0) revert InvalidValue();
         // Transfer tokens optimistically and use allowance
-        rewardToken.safeTransferFrom(msg.sender, address(this), rewardAmount);
-        boosterToken.safeTransferFrom(msg.sender, address(this), boosterAmount);
+        rewardAmount = _safeTransferFrom(rewardToken, rewardAmount);
+        boosterAmount = _safeTransferFrom(boosterToken, boosterAmount);
 
         rewardAmount *= decimalEqReward;
         boosterAmount *= decimalEqBooster;
@@ -258,9 +258,8 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
                 emit Payout(msg.sender, pendingRewards, pendingBooster);
             }
         }
-        pool.pooledToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+        _amount = _safeTransferFrom(pool.pooledToken, _amount);
         pool.totalDeposits += _amount;
-
         user.amount += _amount;
         user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
         emit Deposit(msg.sender, _pid, _amount);
@@ -293,11 +292,17 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
 
-        pool.totalDeposits -= user.amount;
-        pool.pooledToken.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
-
+        uint256 _amount = user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
+        pool.totalDeposits -= _amount;
+        pool.pooledToken.safeTransfer(address(msg.sender), _amount);
+        emit EmergencyWithdraw(msg.sender, _pid, _amount);
+    }
+
+    function _safeTransferFrom(IERC20 token, uint256 amount) private returns (uint256 received) {
+        uint256 previousBalance = token.balanceOf(address(this));
+        token.safeTransferFrom(msg.sender, address(this), amount);
+        return token.balanceOf(address(this)) - previousBalance;
     }
 }
