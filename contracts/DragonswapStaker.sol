@@ -200,8 +200,8 @@ contract DragonswapStaker is OwnableUpgradeable {
         }
 
         user.amount -= _amount;
-        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P;
         pool.totalDeposits -= _amount;
+        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P;
 
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
         emit Withdraw(msg.sender, _pid, _amount);

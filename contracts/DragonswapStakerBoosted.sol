@@ -278,8 +278,8 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
             emit Payout(msg.sender, pendingRewards, pendingBooster);
         }
         user.amount -= _amount;
-        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
         pool.totalDeposits -= _amount;
+        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
 
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
         emit Withdraw(msg.sender, _pid, _amount);
