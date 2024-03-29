@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "./libraries/NonStandardTransfer.sol";
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract DragonswapStaker is OwnableUpgradeable {
+    using NonStandardTransfer for IERC20;
     using SafeERC20 for IERC20;
 
     struct UserInfo {
@@ -22,18 +25,13 @@ contract DragonswapStaker is OwnableUpgradeable {
     }
 
     IERC20 public rewardToken;
-
     uint256 public totalRewards;
     uint256 public rewardsPaidOut;
-
     uint256 public rewardPerSecond;
     uint256 public totalAllocPoint;
-
     uint256 public startTimestamp;
     uint256 public endTimestamp;
-
     PoolInfo[] public poolInfo;
-
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
 
     // Precision constant used for accumulated rewards per share
@@ -49,6 +47,7 @@ contract DragonswapStaker is OwnableUpgradeable {
 
     error FarmClosed();
     error UnauthorizedWithdrawal();
+    error InvalidValue();
 
     constructor() {
         _disableInitializers();
@@ -73,8 +72,13 @@ contract DragonswapStaker is OwnableUpgradeable {
 
     function fund(uint256 rewardAmount) external {
         if (block.timestamp >= endTimestamp) revert FarmClosed();
-        rewardToken.safeTransferFrom(msg.sender, address(this), rewardAmount);
+        rewardAmount = rewardToken.nonStandardTransfer(rewardAmount);
         endTimestamp += rewardAmount / rewardPerSecond;
+        uint256 leftover = rewardAmount % rewardPerSecond;
+        if (leftover > 0) {
+            rewardAmount -= leftover;
+            rewardToken.safeTransfer(msg.sender, leftover);
+        }
         totalRewards += rewardAmount;
         emit Fund(msg.sender, rewardAmount);
     }
@@ -83,7 +87,7 @@ contract DragonswapStaker is OwnableUpgradeable {
         if (_withUpdate) {
             massUpdatePools();
         }
-        if (_pooledToken == address(0)) revert();
+        if (_pooledToken == address(0)) revert InvalidValue();
         uint256 lastRewardTimestamp = block.timestamp > startTimestamp ? block.timestamp : startTimestamp;
         totalAllocPoint += _allocPoint;
         poolInfo.push(
@@ -102,7 +106,7 @@ contract DragonswapStaker is OwnableUpgradeable {
         if (_withUpdate) {
             massUpdatePools();
         }
-        totalAllocPoint -= poolInfo[_pid].allocPoint + _allocPoint;
+        totalAllocPoint = totalAllocPoint - poolInfo[_pid].allocPoint + _allocPoint;
         poolInfo[_pid].allocPoint = _allocPoint;
         emit Set(_pid, _allocPoint);
     }
@@ -169,12 +173,14 @@ contract DragonswapStaker is OwnableUpgradeable {
 
         if (user.amount > 0) {
             uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P - user.rewardDebt;
-            rewardToken.safeTransfer(msg.sender, pendingRewards);
-            rewardsPaidOut += pendingRewards;
-            emit Payout(msg.sender, pendingRewards);
+            if (pendingRewards > 0) {
+                rewardToken.safeTransfer(msg.sender, pendingRewards);
+                rewardsPaidOut += pendingRewards;
+                emit Payout(msg.sender, pendingRewards);
+            }
         }
 
-        pool.pooledToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+        _amount = pool.pooledToken.nonStandardTransfer(_amount);
         pool.totalDeposits += _amount;
 
         user.amount += _amount;
@@ -188,15 +194,17 @@ contract DragonswapStaker is OwnableUpgradeable {
         if (user.amount < _amount) revert UnauthorizedWithdrawal();
 
         updatePool(_pid);
+
         uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P - user.rewardDebt;
+        if (pendingRewards > 0) {
+            rewardToken.safeTransfer(msg.sender, pendingRewards);
+            rewardsPaidOut += pendingRewards;
+            emit Payout(msg.sender, pendingRewards);
+        }
 
-        rewardToken.safeTransfer(msg.sender, pendingRewards);
-        emit Payout(msg.sender, pendingRewards);
-
-        rewardsPaidOut += pendingRewards;
         user.amount -= _amount;
-        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P;
         pool.totalDeposits -= _amount;
+        user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P;
 
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
         emit Withdraw(msg.sender, _pid, _amount);
@@ -205,12 +213,11 @@ contract DragonswapStaker is OwnableUpgradeable {
     function emergencyWithdraw(uint256 _pid) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
-
-        pool.totalDeposits -= user.amount;
-        pool.pooledToken.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
-
+        uint256 _amount = user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
+        pool.totalDeposits -= _amount;
+        pool.pooledToken.safeTransfer(address(msg.sender), _amount);
+        emit EmergencyWithdraw(msg.sender, _pid, _amount);
     }
 }

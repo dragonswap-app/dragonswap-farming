@@ -77,7 +77,7 @@ contract DragonswapStakerFactory is Ownable {
             rewardPerSecond,
             startTimestamp
         );
-        address instance = deploy(data, Impl.CLASSIC);
+        address instance = _deploy(data, Impl.CLASSIC);
         emit Deployed(instance, Impl.CLASSIC, rewardToken, address(0), rewardPerSecond, startTimestamp);
     }
 
@@ -98,14 +98,14 @@ contract DragonswapStakerFactory is Ownable {
             rewardPerSecond,
             startTimestamp
         );
-        address instance = deploy(data, Impl.BOOSTED);
+        address instance = _deploy(data, Impl.BOOSTED);
         emit Deployed(instance, Impl.BOOSTED, rewardToken, boosterToken, rewardPerSecond, startTimestamp);
     }
 
     /**
      * @dev Function to make a new deployment and initialize clone instance
      */
-    function deploy(bytes memory data, Impl implType) private returns (address instance) {
+    function _deploy(bytes memory data, Impl implType) private returns (address instance) {
         address impl = implType == Impl.CLASSIC
             ? implClassic
             : implType == Impl.BOOSTED
@@ -137,10 +137,8 @@ contract DragonswapStakerFactory is Ownable {
         deployments.push(instance);
 
         // Initialize
-        if (data.length > 0) {
-            (bool success, ) = instance.call{value: msg.value}(data);
-            if (!success) revert();
-        }
+        (bool success, ) = instance.call{value: 0}(data);
+        if (!success) revert();
     }
 
     /**
@@ -177,9 +175,9 @@ contract DragonswapStakerFactory is Ownable {
         }
         // Initialize new array
         _deployments = new address[](endIndex - startIndex + 1);
-        uint index = 0;
+        uint256 index = 0;
         // Fill the array with sale addresses
-        for (uint i = startIndex; i <= endIndex; i++) {
+        for (uint256 i = startIndex; i <= endIndex; i++) {
             _deployments[index] = deployments[i];
             index++;
         }
