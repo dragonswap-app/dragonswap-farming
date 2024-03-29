@@ -22,7 +22,7 @@ module.exports = {
         'assets',
         'architecture',
         'merge',
-        'ci'
+        'ci',
       ],
     ],
   },

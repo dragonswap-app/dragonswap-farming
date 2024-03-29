@@ -92,7 +92,7 @@ contract DragonswapRevenueShareStaking is Ownable {
         UserInfo storage user = userInfo[msg.sender];
 
         // Compute the fee and deduct it from amount
-        uint256 fee = amount * depositFeePercent / 10_000;
+        uint256 fee = (amount * depositFeePercent) / 10_000;
         uint256 amountWithoutFee = amount - fee;
 
         uint256 previousAmount = user.amount;
@@ -106,10 +106,10 @@ contract DragonswapRevenueShareStaking is Ownable {
 
             uint256 previousRewardDebt = user.rewardDebt[token];
             uint256 _accRewardsPerShare = accRewardsPerShare[token];
-            user.rewardDebt[token] = currentAmount * _accRewardsPerShare / P;
+            user.rewardDebt[token] = (currentAmount * _accRewardsPerShare) / P;
 
             if (previousAmount != 0) {
-                uint256 pending = previousAmount * _accRewardsPerShare / P - previousRewardDebt;
+                uint256 pending = (previousAmount * _accRewardsPerShare) / P - previousRewardDebt;
                 _payout(token, pending);
             }
         }
@@ -202,9 +202,9 @@ contract DragonswapRevenueShareStaking is Ownable {
 
         if (rewardBalance != lastRewardBalance[token] && _totalDeposits != 0) {
             uint256 accruedReward = rewardBalance - lastRewardBalance[token];
-            _accRewardTokenPerShare += accruedReward * P / _totalDeposits;
+            _accRewardTokenPerShare += (accruedReward * P) / _totalDeposits;
         }
-        return user.amount * _accRewardTokenPerShare / P - user.rewardDebt[token];
+        return (user.amount * _accRewardTokenPerShare) / P - user.rewardDebt[token];
     }
 
     function withdrawFees() external onlyOwner {
@@ -232,8 +232,8 @@ contract DragonswapRevenueShareStaking is Ownable {
                 _updateAccumulated(token);
 
                 uint256 _accRewardsPerShare = accRewardsPerShare[token];
-                uint256 pending = previousAmount * _accRewardsPerShare / P - user.rewardDebt[token];
-                user.rewardDebt[token] = newAmount * _accRewardsPerShare / P;
+                uint256 pending = (previousAmount * _accRewardsPerShare) / P - user.rewardDebt[token];
+                user.rewardDebt[token] = (newAmount * _accRewardsPerShare) / P;
 
                 if (pending != 0) {
                     _payout(token, pending);
@@ -283,7 +283,7 @@ contract DragonswapRevenueShareStaking is Ownable {
 
         if (rewardBalance == _lastRewardBalance || _totalDeposits == 0) return;
 
-        accRewardsPerShare[token] += (rewardBalance - _lastRewardBalance) * P / _totalDeposits;
+        accRewardsPerShare[token] += ((rewardBalance - _lastRewardBalance) * P) / _totalDeposits;
         lastRewardBalance[token] = rewardBalance;
     }
 

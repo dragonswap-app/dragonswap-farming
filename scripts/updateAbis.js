@@ -4,7 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const { getJson, jsons, relativePath } = require('./utils');
 
-const contracts = ['DragonswapStaker', 'DragonswapStakerBoosted', 'DragonswapStakerFactory'];
+const contracts = [
+  'DragonswapStaker',
+  'DragonswapStakerBoosted',
+  'DragonswapStakerFactory',
+];
 const mainTree = ['main', 'develop'];
 
 async function main() {
