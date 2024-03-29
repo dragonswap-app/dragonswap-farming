@@ -5,6 +5,7 @@
     "DragonswapStakerImplClassic": "0x34FA1d93fc71a1739dA05BE4D773A49831584E95",
     "DragonswapStakerImplBoosted": "0xbd9df12b1417c7c3Fb99f2230aD0221BBCBb3cc6",
     "DragonswapStaker": "0x717C7BEb281176fA38b87BaD7c76120626d57064",
-    "DragonswapStakerBoosted": "0xf8b5C31d9dB097262fF3D293340791f97E87542E"
+    "DragonswapStakerBoosted": "0xf8b5C31d9dB097262fF3D293340791f97E87542E",
+    "DragonswapRevenueShareStaking": "0x1ef352607c4916Aa2B8A113CE8c0D405bCFBDF3E"
   }
 }

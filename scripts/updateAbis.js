@@ -8,7 +8,9 @@ const contracts = [
   'DragonswapStaker',
   'DragonswapStakerBoosted',
   'DragonswapStakerFactory',
+  'DragonswapRevenueShareStaking',
 ];
+
 const mainTree = ['main', 'develop'];
 
 async function main() {
