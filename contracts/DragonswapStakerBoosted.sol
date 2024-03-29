@@ -243,11 +243,13 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         if (user.amount > 0) {
             uint256 pendingRewards = (user.amount * pool.accRewardsPerShare) / P1 - user.rewardDebt;
             if (pendingRewards > 0) {
-                uint256 pendingBooster = (pendingRewards * decimalEqReward * P2) / ratio / decimalEqBooster;
                 rewardsPaidOut += pendingRewards;
-                boosterPaidOut += pendingBooster;
                 rewardToken.safeTransfer(msg.sender, pendingRewards);
-                boosterToken.safeTransfer(msg.sender, pendingBooster);
+                uint256 pendingBooster = (pendingRewards * decimalEqReward * P2) / ratio / decimalEqBooster;
+                if (pendingBooster > 0) {
+                    boosterPaidOut += pendingBooster;
+                    boosterToken.safeTransfer(msg.sender, pendingBooster);
+                }
                 emit Payout(msg.sender, pendingRewards, pendingBooster);
             }
         }
