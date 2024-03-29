@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "./libraries/NonStandardTransfer.sol";
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract DragonswapStaker is OwnableUpgradeable {
+    using NonStandardTransfer for IERC20;
     using SafeERC20 for IERC20;
 
     struct UserInfo {
@@ -69,7 +72,7 @@ contract DragonswapStaker is OwnableUpgradeable {
 
     function fund(uint256 rewardAmount) external {
         if (block.timestamp >= endTimestamp) revert FarmClosed();
-        rewardAmount = _safeTransferFrom(rewardToken, rewardAmount);
+        rewardAmount = rewardToken.nonStandardTransfer(rewardAmount);
         endTimestamp += rewardAmount / rewardPerSecond;
         uint256 leftover = rewardAmount % rewardPerSecond;
         if (leftover > 0) {
@@ -177,7 +180,7 @@ contract DragonswapStaker is OwnableUpgradeable {
             }
         }
 
-        _amount = _safeTransferFrom(pool.pooledToken, _amount);
+        _amount = pool.pooledToken.nonStandardTransfer(_amount);
         pool.totalDeposits += _amount;
 
         user.amount += _amount;
@@ -216,11 +219,5 @@ contract DragonswapStaker is OwnableUpgradeable {
         pool.totalDeposits -= _amount;
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
         emit EmergencyWithdraw(msg.sender, _pid, _amount);
-    }
-
-    function _safeTransferFrom(IERC20 token, uint256 amount) private returns (uint256 received) {
-        uint256 previousBalance = token.balanceOf(address(this));
-        token.safeTransferFrom(msg.sender, address(this), amount);
-        return token.balanceOf(address(this)) - previousBalance;
     }
 }

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "./libraries/NonStandardTransfer.sol";
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -10,6 +12,7 @@ interface IERC20Metadata {
 }
 
 contract DragonswapStakerBoosted is OwnableUpgradeable {
+    using NonStandardTransfer for IERC20;
     using SafeERC20 for IERC20;
 
     struct UserInfo {
@@ -96,8 +99,8 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         if (block.timestamp >= endTimestamp) revert FarmClosed();
         if (rewardAmount == 0 || boosterAmount == 0) revert InvalidValue();
         // Transfer tokens optimistically and use allowance
-        rewardAmount = _safeTransferFrom(rewardToken, rewardAmount);
-        boosterAmount = _safeTransferFrom(boosterToken, boosterAmount);
+        rewardAmount = rewardToken.nonStandardTransfer(rewardAmount);
+        boosterAmount = boosterToken.nonStandardTransfer(boosterAmount);
 
         rewardAmount *= decimalEqReward;
         boosterAmount *= decimalEqBooster;
@@ -253,7 +256,7 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
                 emit Payout(msg.sender, pendingRewards, pendingBooster);
             }
         }
-        _amount = _safeTransferFrom(pool.pooledToken, _amount);
+        _amount = pool.pooledToken.nonStandardTransfer(_amount);
         pool.totalDeposits += _amount;
         user.amount += _amount;
         user.rewardDebt = (user.amount * pool.accRewardsPerShare) / P1;
@@ -295,11 +298,5 @@ contract DragonswapStakerBoosted is OwnableUpgradeable {
         pool.totalDeposits -= _amount;
         pool.pooledToken.safeTransfer(address(msg.sender), _amount);
         emit EmergencyWithdraw(msg.sender, _pid, _amount);
-    }
-
-    function _safeTransferFrom(IERC20 token, uint256 amount) private returns (uint256 received) {
-        uint256 previousBalance = token.balanceOf(address(this));
-        token.safeTransferFrom(msg.sender, address(this), amount);
-        return token.balanceOf(address(this)) - previousBalance;
     }
 }
