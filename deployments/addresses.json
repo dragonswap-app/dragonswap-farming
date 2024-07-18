@@ -1,11 +1,18 @@
 {
-  "mainnet": {},
+  "mainnet": {
+    "SEI-SEIYAN": "0x8ba502d9243fa5e44678044098be9782cebafda5",
+    "SEI-POPO": "0xa2aee4f82023c6614f3ab40041c3b434ff97b439",
+    "SEIYAN": "0x5f0e07dfee5832faa00c63f2d33a0d79150e8598",
+    "POPO": "0xc18b6a15fb0ceaf5eb18696eefcb5bc7b9107149",
+    "WSEI": "0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7"
+  },
   "testnet": {
-    "DragonswapStakerFactory": "0xa78054151202B7d7A9D7A0997d5E937FE4284d2c",
-    "DragonswapStakerImplClassic": "0x34FA1d93fc71a1739dA05BE4D773A49831584E95",
-    "DragonswapStakerImplBoosted": "0xbd9df12b1417c7c3Fb99f2230aD0221BBCBb3cc6",
-    "DragonswapStaker": "0x717C7BEb281176fA38b87BaD7c76120626d57064",
-    "DragonswapStakerBoosted": "0xf8b5C31d9dB097262fF3D293340791f97E87542E",
-    "DragonswapRevenueShareStaking": "0x1ef352607c4916Aa2B8A113CE8c0D405bCFBDF3E"
+    "USDT": "0xf983afa393199d6902a1dd04f8e93465915ffd8b",
+    "USDC": "0xace5f7Ea93439Af39b46d2748fA1aC19951c8d7C",
+    "GLO": "0xcE15c17281e6B64b571c06Cbb83c68C3b97da275",
+    "PYTH": "0x3Fd40CFe4B8A1d748cad33db408b49579c6B4Ca5",
+    "DAI": "0x6Ffd84537040569Bb8160d1E06d0A5d4CEfdf638",
+    "DSWAP": "0x7b75109369ACb528d9fa989E227812a6589712b9",
+    "XAVA": "0xeBdE45A4DB821c0174936E53f77e6B8805e9E2eb"
   }
 }
