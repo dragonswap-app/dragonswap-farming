@@ -38,7 +38,7 @@ async function main() {
     const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['DSWAP'];
     const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
 
-    const rewardPerSecond = ethers.utils.parseEther('0.0023148148148148');
+    const rewardPerSecond = ethers.utils.parseUnits('0.0023148148148148', await rewardToken.decimals());
     const startTimestamp = await currentTimestamp() + 120;
     const rewardAmount = ethers.utils.parseUnits('50000', await rewardToken.decimals());
 
