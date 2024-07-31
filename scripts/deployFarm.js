@@ -9,8 +9,8 @@ const wait = async () => {await sleep(3000)};
 async function main() {
 
     const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[hre.network.name][
-        'DragonswapStakerFactory'
-        ];
+    'DragonswapStakerFactory'
+    ];
 
     const dragonswapStakerFactory = await hre.ethers.getContractAt(
         'DragonswapStakerFactory', dragonswapStakerFactoryAddress
@@ -33,14 +33,14 @@ async function main() {
         console.log('Classic implementation set on factory');
     }
 
-    const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['PYTH'];
+    const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['SEI-SEIYAN'];
 
-    const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['DSWAP'];
+    const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['WSEI'];
     const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
 
-    const rewardPerSecond = ethers.utils.parseUnits('0.0023148148148148', await rewardToken.decimals());
-    const startTimestamp = await currentTimestamp() + 120;
-    const rewardAmount = ethers.utils.parseUnits('50000', await rewardToken.decimals());
+    const rewardPerSecond = ethers.utils.parseUnits('0.052883437873357228', await rewardToken.decimals());
+    const startTimestamp = 1722531600;
+    const rewardAmount = ethers.utils.parseUnits('141643', await rewardToken.decimals());
 
     const stakerFarmTx = await dragonswapStakerFactory.deployClassic(
         rewardToken.address,
@@ -73,6 +73,11 @@ async function main() {
 
     await stakerFarm.fund(rewardAmount)
     console.log("Funded staker farm");
+
+    console.log(`
+      Start: ${await stakerFarm.startTimestamp()}
+      End: ${await stakerFarm.endTimestamp()}
+    `);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
