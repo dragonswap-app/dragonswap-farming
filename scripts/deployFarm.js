@@ -71,10 +71,7 @@ async function main() {
 
     await wait();
 
-    const testRewardAmount = ethers.utils.parseUnits('500', await rewardToken.decimals());
-
-    await stakerFarm.fund(testRewardAmount)
-
+    await stakerFarm.fund(rewardAmount)
     console.log("Funded staker farm");
 
     console.log(`
