@@ -11,7 +11,7 @@ async function main() {
         'DragonswapStakerFactory', dragonswapStakerFactoryAddress
     );
 
-    const stakerFarmImplFactory = await hre.ethers.getContractFactory('DragonswapStaker');
+    let stakerFarmImplFactory = await hre.ethers.getContractFactory('DragonswapStaker');
     const stakerFarmImplClassic = await stakerFarmImplFactory.deploy();
     await stakerFarmImplClassic.deployed();
     console.log(`DragonswapStaker address: ${stakerFarmImplClassic.address}`);
@@ -26,6 +26,7 @@ async function main() {
     await dragonswapStakerFactory.setImplementationClassic(stakerFarmImplClassic.address);
     console.log('Classic implementation set on factory');
 
+    stakerFarmImplFactory = await hre.ethers.getContractFactory('DragonswapStakerBoosted');
     const stakerFarmImplBoosted = await stakerFarmImplFactory.deploy();
     await stakerFarmImplBoosted.deployed();
     console.log(`DragonswapStakerBoosted address: ${stakerFarmImplBoosted.address}`);
