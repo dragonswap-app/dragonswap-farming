@@ -1,5 +1,8 @@
 {
-  "mainnet": {},
+  "mainnet": {
+    "DragonswapStakerFactory": "0x34975246B5a3c8e9E1C19BF9B6a6088b741d4E2D",
+    "DragonswapStakerImplClassic": "0x2a2f6643aca537f9f56CC27A02cDC88E6C66ea9C"
+  },
   "testnet": {
     "DragonswapStakerFactory": "0xa78054151202B7d7A9D7A0997d5E937FE4284d2c",
     "DragonswapStakerImplClassic": "0x34FA1d93fc71a1739dA05BE4D773A49831584E95",

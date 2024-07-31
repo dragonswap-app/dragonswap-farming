@@ -11,8 +11,8 @@ const timeout = 50000;
 module.exports = {
   networks: {
     mainnet: {
-      url: 'to be added',
-      chainId: 0,
+      url: 'https://evm-rpc.sei-apis.com',
+      chainId: 1329,
       timeout,
       accounts,
     },

@@ -1,5 +1,11 @@
 {
-  "mainnet": {},
+  "mainnet": {
+    "SEI-SEIYAN": "0x8ba502d9243fa5e44678044098be9782cebafda5",
+    "SEI-POPO": "0xa2aee4f82023c6614f3ab40041c3b434ff97b439",
+    "SEIYAN": "0x5f0e07dfee5832faa00c63f2d33a0d79150e8598",
+    "POPO": "0xc18b6a15fb0ceaf5eb18696eefcb5bc7b9107149",
+    "WSEI": "0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7"
+  },
   "testnet": {
     "USDT": "0xf983afa393199d6902a1dd04f8e93465915ffd8b",
     "USDC": "0xace5f7Ea93439Af39b46d2748fA1aC19951c8d7C",
