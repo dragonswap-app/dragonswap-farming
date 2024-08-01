@@ -33,18 +33,18 @@ async function main() {
         console.log('Boosted implementation set on factory');
     }
 
-    const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['USDC'];
+    const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['SEI-FXS'];
 
-    const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['DSWAP'];
+    const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['WSEI'];
     const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
 
-    const boostedTokenAddress = getJson(jsons.config)[hre.network.name]['GLO'];
+    const boostedTokenAddress = getJson(jsons.config)[hre.network.name]['FXS'];
     const boostedToken = await hre.ethers.getContractAt('Token', boostedTokenAddress);
 
-    const rewardPerSecond = ethers.utils.parseUnits('0.0858148148148', await rewardToken.decimals());
-    const startTimestamp = await currentTimestamp() + 120;
-    const rewardAmount = ethers.utils.parseUnits('60000', await rewardToken.decimals());
-    const boostedAmount = ethers.utils.parseUnits('80000', await boostedToken.decimals());
+    const rewardPerSecond = ethers.utils.parseUnits('0.001783545840922890', await rewardToken.decimals());
+    const startTimestamp = 1722531600;
+    const rewardAmount = ethers.utils.parseUnits('9400', await rewardToken.decimals());
+    const boostedAmount = ethers.utils.parseUnits('1461', await boostedToken.decimals());
 
     const stakerBoostedFarmTx = await dragonswapStakerFactory.deployBoosted(
         rewardToken.address,
