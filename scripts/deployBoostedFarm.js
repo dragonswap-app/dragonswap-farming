@@ -33,6 +33,7 @@ async function main() {
         console.log('Boosted implementation set on factory');
     }
 
+
     const stakeTokenName = getJson(jsons.config)['deployBoostedFarm']['stakeTokenName'];
     const rewardTokenName = getJson(jsons.config)['deployBoostedFarm']['rewardTokenName'];
     const boosterTokenName = getJson(jsons.config)['deployBoostedFarm']['boosterTokenName'];
@@ -53,6 +54,7 @@ async function main() {
 
     const rewardAmount = ethers.utils.parseUnits(rewardTokenAmount, rewardTokenDecimals);
     const boostedAmount = ethers.utils.parseUnits(boosterTokenAmount, boostedTokenDecimals);
+
 
     const stakerBoostedFarmTx = await dragonswapStakerFactory.deployBoosted(
         rewardTokenAddress,
