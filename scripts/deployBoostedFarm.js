@@ -6,6 +6,34 @@ const {currentTimestamp} = require("../test/helpers");
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const wait = async () => {await sleep(3000)};
 
+async function getFarmConfig() {
+    const stakeTokenName = getJson(jsons.farmConfig)['boostedFarmSettings']['stakeTokenName'];
+    const rewardTokenName = getJson(jsons.farmConfig)['boostedFarmSettings']['rewardTokenName'];
+    const boosterTokenName = getJson(jsons.farmConfig)['boostedFarmSettings']['boosterTokenName'];
+
+    const stakeTokenAddress = getJson(jsons.tokenConfig)[hre.network.name][stakeTokenName];
+    const rewardTokenAddress = getJson(jsons.tokenConfig)[hre.network.name][rewardTokenName];
+    const boosterTokenAddress = getJson(jsons.tokenConfig)[hre.network.name][boosterTokenName];
+    const rewardTokenAmount = getJson(jsons.farmConfig)['boostedFarmSettings']['rewardTokenAmount'];
+    const boosterTokenAmount = getJson(jsons.farmConfig)['boostedFarmSettings']['boosterTokenAmount'];
+    const rewardPerSecond = getJson(jsons.farmConfig)['boostedFarmSettings']['rewardPerSecond'];
+    const startTimestamp = getJson(jsons.farmConfig)['boostedFarmSettings']['startTimestamp'];
+
+    return {
+        stakeTokenName,
+        rewardTokenName,
+        boosterTokenName,
+        stakeTokenAddress,
+        rewardTokenAddress,
+        boosterTokenAddress,
+        rewardTokenAmount,
+        boosterTokenAmount,
+        rewardPerSecond,
+        startTimestamp
+    };
+
+}
+
 async function main() {
 
     const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[hre.network.name][
@@ -33,34 +61,20 @@ async function main() {
         console.log('Boosted implementation set on factory');
     }
 
+    const farmConfig = await getFarmConfig();
 
-    const stakeTokenName = getJson(jsons.config)['deployBoostedFarm']['stakeTokenName'];
-    const rewardTokenName = getJson(jsons.config)['deployBoostedFarm']['rewardTokenName'];
-    const boosterTokenName = getJson(jsons.config)['deployBoostedFarm']['boosterTokenName'];
+    const rewardToken = await hre.ethers.getContractAt('Token', farmConfig.rewardTokenAddress);
+    const boostedToken = await hre.ethers.getContractAt('Token', farmConfig.boosterTokenAddress);
 
-    const stakeTokenAddress = getJson(jsons.config)[hre.network.name][stakeTokenName];
-    const rewardTokenAddress = getJson(jsons.config)[hre.network.name][rewardTokenName];
-    const boosterTokenAddress = getJson(jsons.config)[hre.network.name][boosterTokenName];
-    const rewardTokenAmount = getJson(jsons.config)['deployBoostedFarm']['rewardTokenAmount'];
-    const boosterTokenAmount = getJson(jsons.config)['deployBoostedFarm']['boosterTokenAmount'];
-    const rewardPerSecond = getJson(jsons.config)['deployBoostedFarm']['rewardPerSecond'];
-    const startTimestamp = getJson(jsons.config)['deployBoostedFarm']['startTimestamp'];
-
-    const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
-    const rewardTokenDecimals = await rewardToken.decimals();
-    
-    const boostedToken = await hre.ethers.getContractAt('Token', boosterTokenAddress);
-    const boostedTokenDecimals = await boostedToken.decimals();
-
-    const rewardAmount = ethers.utils.parseUnits(rewardTokenAmount, rewardTokenDecimals);
-    const boostedAmount = ethers.utils.parseUnits(boosterTokenAmount, boostedTokenDecimals);
+    const rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
+    const boostedAmount = ethers.utils.parseUnits(farmConfig.boosterTokenAmount, await boostedToken.decimals());
 
 
     const stakerBoostedFarmTx = await dragonswapStakerFactory.deployBoosted(
-        rewardTokenAddress,
-        boosterTokenAddress,
-        rewardPerSecond,
-        startTimestamp
+        farmConfig.rewardTokenAddress,
+        farmConfig.boosterTokenAddress,
+        farmConfig.rewardPerSecond,
+        farmConfig.startTimestamp
     )
 
     const stakerBoostedFarmTxReceipt = await stakerBoostedFarmTx.wait()
@@ -78,7 +92,7 @@ async function main() {
 
     await wait();
 
-    await stakerBoostedFarm.add(100, stakeTokenAddress, false)
+    await stakerBoostedFarm.add(100, farmConfig.stakeTokenAddress, false)
 
     console.log('Added pool to stakerBoosted farm');
 

@@ -1,0 +1,18 @@
+{
+    "classicFarmSettings":{
+      "stakeTokenName": "GLO",
+      "rewardTokenName": "USDT",
+      "rewardTokenAmount": "148480",
+      "rewardPerSecond": "245502",
+      "startTimestamp": "1722531600"
+    },
+    "boostedFarmSettings":{
+      "stakeTokenName": "USDT",
+      "rewardTokenName": "DSWAP",
+      "boosterTokenName": "GLO",
+      "rewardTokenAmount": "9400",
+      "boosterTokenAmount": "1461",
+      "rewardPerSecond": "15542328042328042",
+      "startTimestamp": "1722531600"
+    }
+}  

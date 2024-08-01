@@ -6,6 +6,28 @@ const {currentTimestamp} = require("../test/helpers");
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const wait = async () => {await sleep(3000)};
 
+async function getFarmConfig() {
+    const stakeTokenName = getJson(jsons.farmConfig)['classicFarmSettings']['stakeTokenName'];
+    const rewardTokenName = getJson(jsons.farmConfig)['classicFarmSettings']['rewardTokenName'];
+
+    const stakeTokenAddress = getJson(jsons.tokenConfig)[hre.network.name][stakeTokenName];
+    const rewardTokenAddress = getJson(jsons.tokenConfig)[hre.network.name][rewardTokenName];
+    const rewardTokenAmount = getJson(jsons.farmConfig)['classicFarmSettings']['rewardTokenAmount'];
+    const rewardPerSecond = getJson(jsons.farmConfig)['classicFarmSettings']['rewardPerSecond'];
+    const startTimestamp = getJson(jsons.farmConfig)['classicFarmSettings']['startTimestamp'];
+
+    return {
+        stakeTokenName,
+        rewardTokenName,
+        stakeTokenAddress,
+        rewardTokenAddress,
+        rewardTokenAmount,
+        rewardPerSecond,
+        startTimestamp
+    };
+
+}
+
 async function main() {
 
     const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[hre.network.name][
@@ -33,24 +55,16 @@ async function main() {
         console.log('Classic implementation set on factory');
     }
 
-    const stakeTokenName = getJson(jsons.config)['deployClassicFarm']['stakeTokenName'];
-    const rewardTokenName = getJson(jsons.config)['deployClassicFarm']['rewardTokenName'];
+    const farmConfig = await getFarmConfig();
 
-    const stakeTokenAddress = getJson(jsons.config)[hre.network.name][stakeTokenName];
-    const rewardTokenAddress = getJson(jsons.config)[hre.network.name][rewardTokenName];
-    const rewardTokenAmount = getJson(jsons.config)['deployClassicFarm']['rewardTokenAmount'];
-    const rewardPerSecond = getJson(jsons.config)['deployClassicFarm']['rewardPerSecond'];
-    const startTimestamp = getJson(jsons.config)['deployClassicFarm']['startTimestamp'];
-
-    const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
-    const rewardTokenDecimals = await rewardToken.decimals();
+    const rewardToken = await hre.ethers.getContractAt('Token', farmConfig.rewardTokenAddress);
     
-    const rewardAmount = ethers.utils.parseUnits(rewardTokenAmount, rewardTokenDecimals);
+    const rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
 
     const stakerFarmTx = await dragonswapStakerFactory.deployClassic(
-        rewardTokenAddress,
-        rewardPerSecond,
-        startTimestamp
+        farmConfig.rewardTokenAddress,
+        farmConfig.rewardPerSecond,
+        farmConfig.startTimestamp
     )
 
     const stakerFarmTxReceipt = await stakerFarmTx.wait()
@@ -68,7 +82,7 @@ async function main() {
 
     await wait();
 
-    await stakerFarm.add(100, stakeTokenAddress, false)
+    await stakerFarm.add(100, farmConfig.stakeTokenAddress, false)
 
     console.log("Staking pool added");
 

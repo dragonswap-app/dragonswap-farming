@@ -18,21 +18,5 @@
     "DAI": "0x6Ffd84537040569Bb8160d1E06d0A5d4CEfdf638",
     "DSWAP": "0x7b75109369ACb528d9fa989E227812a6589712b9",
     "XAVA": "0xeBdE45A4DB821c0174936E53f77e6B8805e9E2eb"
-  },
-  "deployClassicFarm":{
-    "stakeTokenName": "GLO",
-    "rewardTokenName": "USDT",
-    "rewardTokenAmount": "148480",
-    "rewardPerSecond": "245502",
-    "startTimestamp": "1722531600"
-  },
-  "deployBoostedFarm":{
-    "stakeTokenName": "USDT",
-    "rewardTokenName": "DSWAP",
-    "boosterTokenName": "GLO",
-    "rewardTokenAmount": "9400",
-    "boosterTokenAmount": "1461",
-    "rewardPerSecond": "15542328042328042",
-    "startTimestamp": "1722531600"
   }
 }

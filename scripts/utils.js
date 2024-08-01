@@ -7,7 +7,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const jsons = {
   addresses: 'addresses.json',
-  config: 'config.json',
+  tokenConfig: 'tokenConfig.json',
+  farmConfig: 'farmConfig.json',
   abis: 'abis.json',
 };
 
