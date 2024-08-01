@@ -9,7 +9,7 @@ const wait = async () => {await sleep(3000)};
 async function main() {
 
     const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[hre.network.name][
-    'DragonswapStakerFactory'
+    "DragonswapStakerFactory"
     ];
 
     const dragonswapStakerFactory = await hre.ethers.getContractAt(
@@ -33,17 +33,22 @@ async function main() {
         console.log('Classic implementation set on factory');
     }
 
-    const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['SEI-SEIYAN'];
+    const stakeTokenName = getJson(jsons.config)['deployClassicFarm']['stakeTokenName'];
+    const rewardTokenName = getJson(jsons.config)['deployClassicFarm']['rewardTokenName'];
 
-    const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['WSEI'];
+    const stakeTokenAddress = getJson(jsons.config)[hre.network.name][stakeTokenName];
+    const rewardTokenAddress = getJson(jsons.config)[hre.network.name][rewardTokenName];
+    const rewardTokenAmount = getJson(jsons.config)['deployClassicFarm']['rewardTokenAmount'];
+    const rewardPerSecond = getJson(jsons.config)['deployClassicFarm']['rewardPerSecond'];
+    const startTimestamp = getJson(jsons.config)['deployClassicFarm']['startTimestamp'];
+
     const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
-
-    const rewardPerSecond = ethers.utils.parseUnits('0.052883437873357228', await rewardToken.decimals());
-    const startTimestamp = 1722531600;
-    const rewardAmount = ethers.utils.parseUnits('141643', await rewardToken.decimals());
+    const rewardTokenDecimals = await rewardToken.decimals();
+    
+    const rewardAmount = ethers.utils.parseUnits(rewardTokenAmount, rewardTokenDecimals);
 
     const stakerFarmTx = await dragonswapStakerFactory.deployClassic(
-        rewardToken.address,
+        rewardTokenAddress,
         rewardPerSecond,
         startTimestamp
     )
@@ -63,7 +68,7 @@ async function main() {
 
     await wait();
 
-    await stakerFarm.add(100, tokenToStakeAddress, false)
+    await stakerFarm.add(100, stakeTokenAddress, false)
 
     console.log("Staking pool added");
 
