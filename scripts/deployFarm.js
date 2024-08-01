@@ -33,14 +33,14 @@ async function main() {
         console.log('Classic implementation set on factory');
     }
 
-    const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['SEI-SEIYAN'];
+    const tokenToStakeAddress = getJson(jsons.config)[hre.network.name]['SEIYAN-ISEI'];
 
-    const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['WSEI'];
+    const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['ISEI'];
     const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
 
-    const rewardPerSecond = ethers.utils.parseUnits('0.052883437873357228', await rewardToken.decimals());
+    const rewardPerSecond = ethers.utils.parseUnits('0.055436', await rewardToken.decimals());
     const startTimestamp = 1722531600;
-    const rewardAmount = ethers.utils.parseUnits('141643', await rewardToken.decimals());
+    const rewardAmount = ethers.utils.parseUnits('148480', await rewardToken.decimals());
 
     const stakerFarmTx = await dragonswapStakerFactory.deployClassic(
         rewardToken.address,

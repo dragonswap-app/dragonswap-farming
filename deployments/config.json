@@ -2,7 +2,9 @@
   "mainnet": {
     "SEI-SEIYAN": "0x8ba502d9243fa5e44678044098be9782cebafda5",
     "SEI-POPO": "0xa2aee4f82023c6614f3ab40041c3b434ff97b439",
+    "SEIYAN-ISEI": "0x1164cb64477dc06d533c4d8905d76adeb5adbb94",
     "SEIYAN": "0x5f0e07dfee5832faa00c63f2d33a0d79150e8598",
+    "ISEI": "0x5Cf6826140C1C56Ff49C808A1A75407Cd1DF9423",
     "POPO": "0xc18b6a15fb0ceaf5eb18696eefcb5bc7b9107149",
     "WSEI": "0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7"
   },
