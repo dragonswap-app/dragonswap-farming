@@ -6,7 +6,7 @@ async function main() {
 
     const farmAddress = "0x603BfA58dBD9F4C0955F906473C80F04F001120a";
 
-    const rewardTokenAddress = getJson(jsons.config)[hre.network.name]['ISEI'];
+    const rewardTokenAddress = getJson(jsons.tokenConfig)[hre.network.name]['ISEI'];
     const rewardToken = await hre.ethers.getContractAt('Token', rewardTokenAddress);
 
     const rewardAmount = ethers.utils.parseUnits('144980', await rewardToken.decimals());
