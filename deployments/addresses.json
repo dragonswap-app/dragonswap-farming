@@ -5,11 +5,15 @@
     "DragonswapStakerImplBoosted": "0x69D40C24552A9e6884345e5c9966363178c708dF"
   },
   "testnet": {
-    "DragonswapStakerFactory": "0xa78054151202B7d7A9D7A0997d5E937FE4284d2c",
-    "DragonswapStakerImplClassic": "0x34FA1d93fc71a1739dA05BE4D773A49831584E95",
-    "DragonswapStakerImplBoosted": "0xbd9df12b1417c7c3Fb99f2230aD0221BBCBb3cc6",
-    "DragonswapStaker": "0x717C7BEb281176fA38b87BaD7c76120626d57064",
-    "DragonswapStakerBoosted": "0xf8b5C31d9dB097262fF3D293340791f97E87542E",
-    "DragonswapRevenueShareStaking": "0x1ef352607c4916Aa2B8A113CE8c0D405bCFBDF3E"
+    "DragonswapStakerFactory": "0xd7854CEea869323F5218c539939c751092B6054e",
+    "DragonswapStakerImplClassic": "0x0443ab100D184B8ba8Dd815543102f576Df2B430",
+    "DragonswapStakerImplBoosted": "0x8F099C6D1eFB69de9Ed99cD5f125768E944427F8",
+    "DragonswapStaker": "0x543abd1D6d7Be83A24552e6aA952686715115361",
+    "DragonswapStakerBoosted": "0x988EAa617D692489191FbEA83Eef6541c0236e08"
+  },
+  "local": {
+    "DragonswapStakerFactory": "0x34975246B5a3c8e9E1C19BF9B6a6088b741d4E2D",
+    "DragonswapStakerImplClassic": "0xF1d1598c2C48a70D708537693c89d6D699a902cb",
+    "DragonswapStakerImplBoosted": "0x69D40C24552A9e6884345e5c9966363178c708dF"
   }
 }

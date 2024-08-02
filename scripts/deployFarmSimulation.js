@@ -1,6 +1,7 @@
 const hre = require('hardhat');
 const { getJson, saveJson, sleep, jsons } = require('./utils');
 const { ethers } = require('hardhat');
+const {currentTimestamp} = require("../test/helpers");
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const wait = async () => {await sleep(3000)};
@@ -28,13 +29,18 @@ async function getFarmConfig() {
         rewardPerSecond,
         startTimestamp
     };
+
 }
 
 async function main() {
 
+    const ownerAddress = process.env.OWNER_ADDRESS;
+
+    const impersonatedSigner = await ethers.getImpersonatedSigner(ownerAddress);
+
     const farmConfig = await getFarmConfig();
 
-    const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[hre.network.name]['DragonswapStakerFactory'];
+    const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[hre.network.name]["DragonswapStakerFactory"];
 
     const dragonswapStakerFactory = await hre.ethers.getContractAt(
         'DragonswapStakerFactory', dragonswapStakerFactoryAddress
@@ -42,7 +48,7 @@ async function main() {
 
     if(await dragonswapStakerFactory.implClassic() === ZERO_ADDRESS) {
         const stakerFarmImplFactory = await hre.ethers.getContractFactory('DragonswapStaker');
-        const stakerFarmImplClassic = await stakerFarmImplFactory.deploy();
+        const stakerFarmImplClassic = await stakerFarmImplFactory.connect(impersonatedSigner).deploy();
         await stakerFarmImplClassic.deployed();
         console.log(`DragonswapStaker address: ${stakerFarmImplClassic.address}`);
 
@@ -53,15 +59,24 @@ async function main() {
             stakerFarmImplClassic.address
         );
 
-        await dragonswapStakerFactory.setImplementationClassic(stakerFarmImplClassic.address);
+        await dragonswapStakerFactory.connect(impersonatedSigner).setImplementationClassic(stakerFarmImplClassic.address);
         console.log('Classic implementation set on factory');
     }
 
-    const rewardToken = await hre.ethers.getContractAt('Token', farmConfig.rewardTokenAddress);
-    
-    const rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
+    var rewardAmount;
+    var rewardToken;
 
-    const stakerFarmTx = await dragonswapStakerFactory.deployClassic(
+    if (farmConfig.rewardTokenName === 'WSEI'){
+        rewardToken = await hre.ethers.getContractAt('WSEI', farmConfig.rewardTokenAddress);
+        rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
+        
+        await rewardToken.connect(impersonatedSigner).deposit({value: rewardAmount});
+    } else {
+        rewardToken = await hre.ethers.getContractAt('Token', farmConfig.rewardTokenAddress);
+        rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
+    }
+
+    const stakerFarmTx = await dragonswapStakerFactory.connect(impersonatedSigner).deployClassic(
         farmConfig.rewardTokenAddress,
         farmConfig.rewardPerSecond,
         farmConfig.startTimestamp
@@ -71,32 +86,24 @@ async function main() {
 
     const stakerFarm = await hre.ethers.getContractAt('DragonswapStaker', stakerFarmTxReceipt.logs[0].address)
 
-    saveJson(
-        jsons.addresses,
-        hre.network.name,
-        'DragonswapStaker',
-        stakerFarm.address
-    );
-
     console.log("Staker farm address: ", stakerFarm.address);
 
     await wait();
 
-    await stakerFarm.add(100, farmConfig.stakeTokenAddress, false)
+    await stakerFarm.connect(impersonatedSigner).add(100, farmConfig.stakeTokenAddress, false)
 
     console.log("Staking pool added");
 
-    await rewardToken.approve(stakerFarm.address, rewardAmount)
+    await rewardToken.connect(impersonatedSigner).approve(stakerFarm.address, rewardAmount)
 
     await wait();
-
-    await stakerFarm.fund(rewardAmount)
+    await stakerFarm.connect(impersonatedSigner).fund(rewardAmount)
     console.log("Funded staker farm");
 
     console.log(`
       Start: ${await stakerFarm.startTimestamp()}
       End: ${await stakerFarm.endTimestamp()}
-    `);
+      `);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

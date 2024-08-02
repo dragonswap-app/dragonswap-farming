@@ -2,9 +2,6 @@ const hre = require('hardhat');
 const { getJson, saveJson, sleep, jsons } = require('./utils');
 const { ethers } = require('hardhat');
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-const wait = async () => {await sleep(3000)};
-
 async function getFarmConfig() {
 
     const boostedFarmSettings = getJson(jsons.farmConfig)['boostedFarmSettings'];
@@ -34,10 +31,15 @@ async function getFarmConfig() {
         rewardPerSecond,
         startTimestamp
     };
-
 }
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const wait = async () => {await sleep(3000)};
+
 async function main() {
+    const ownerAddress = process.env.OWNER_ADDRESS;
+
+    const impersonatedSigner = await ethers.getImpersonatedSigner(ownerAddress);
 
     const farmConfig = await getFarmConfig();
 
@@ -64,14 +66,33 @@ async function main() {
         console.log('Boosted implementation set on factory');
     }
 
-    const rewardToken = await hre.ethers.getContractAt('Token', farmConfig.rewardTokenAddress);
-    const boostedToken = await hre.ethers.getContractAt('Token', farmConfig.boosterTokenAddress);
+    var rewardAmount;
+    var boostedAmount;
 
-    const rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
-    const boostedAmount = ethers.utils.parseUnits(farmConfig.boosterTokenAmount, await boostedToken.decimals());
+    var rewardToken;
+    var boostedToken;
 
+    if (farmConfig.rewardTokenName === 'WSEI'){
+        rewardToken = await hre.ethers.getContractAt('WSEI', farmConfig.rewardTokenAddress);
+        rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
 
-    const stakerBoostedFarmTx = await dragonswapStakerFactory.deployBoosted(
+        await rewardToken.connect(impersonatedSigner).deposit({value: rewardAmount});
+    } else {
+        rewardToken = await hre.ethers.getContractAt('Token', farmConfig.rewardTokenAddress);
+        rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
+    }
+
+    if (farmConfig.boosterTokenName === 'WSEI'){
+        boostedToken = await hre.ethers.getContractAt('WSEI', farmConfig.boosterTokenAddress);
+        boostedAmount = ethers.utils.parseUnits(farmConfig.boosterTokenAmount, await boostedToken.decimals());
+
+        await rewardToken.connect(impersonatedSigner).deposit({value: rewardAmount});
+    } else {
+        boostedToken = await hre.ethers.getContractAt('Token', farmConfig.boosterTokenAddress);
+        boostedAmount = ethers.utils.parseUnits(farmConfig.boosterTokenAmount, await boostedToken.decimals());
+    }
+
+    const stakerBoostedFarmTx = await dragonswapStakerFactory.connect(impersonatedSigner).deployBoosted(
         farmConfig.rewardTokenAddress,
         farmConfig.boosterTokenAddress,
         farmConfig.rewardPerSecond,
@@ -82,36 +103,27 @@ async function main() {
 
     const stakerBoostedFarm = await hre.ethers.getContractAt('DragonswapStakerBoosted', stakerBoostedFarmTxReceipt.logs[0].address)
 
-    saveJson(
-        jsons.addresses,
-        hre.network.name,
-        'DragonswapStakerBoosted',
-        stakerBoostedFarm.address
-    );
-
     console.log("StakerBoosted farm address: ", stakerBoostedFarm.address);
 
     await wait();
 
-    await stakerBoostedFarm.add(100, farmConfig.stakeTokenAddress, false)
+    await stakerBoostedFarm.connect(impersonatedSigner).add(100, farmConfig.stakeTokenAddress, false)
 
     console.log('Added pool to stakerBoosted farm');
 
-    await rewardToken.approve(stakerBoostedFarm.address, rewardAmount)
+    await rewardToken.connect(impersonatedSigner).approve(stakerBoostedFarm.address, rewardAmount)
     await wait();
-    await boostedToken.approve(stakerBoostedFarm.address, boostedAmount)
-
+    await boostedToken.connect(impersonatedSigner).approve(stakerBoostedFarm.address, boostedAmount)
     await wait();
 
-    await stakerBoostedFarm.fund(rewardAmount, boostedAmount)
+    await stakerBoostedFarm.connect(impersonatedSigner).fund(rewardAmount, boostedAmount)
 
     console.log('StakerBoosted farm funded');
 
     console.log(`
-        Start: ${await stakerBoostedFarm.startTimestamp()}
-        End: ${await stakerBoostedFarm.endTimestamp()}
-      `);
-
+      Start: ${await stakerBoostedFarm.startTimestamp()}
+      End: ${await stakerBoostedFarm.endTimestamp()}
+    `);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
