@@ -2,6 +2,13 @@ const hre = require('hardhat');
 const { getJson, saveJson, sleep, jsons } = require('./utils');
 const { ethers } = require('hardhat');
 
+async function getTokenAndAmount(tokenName, tokenAddress, tokenAmount) {
+    const contractName = tokenName === 'WSEI' ? 'WSEI' : 'Token';
+    const token = await hre.ethers.getContractAt(contractName, tokenAddress);
+    const amount = ethers.utils.parseUnits(tokenAmount, await token.decimals());
+    return { token, amount };
+}
+
 async function getFarmConfig() {
 
     const boostedFarmSettings = getJson(jsons.farmConfig)['boostedFarmSettings'];
@@ -66,30 +73,15 @@ async function main() {
         console.log('Boosted implementation set on factory');
     }
 
-    var rewardAmount;
-    var boostedAmount;
+    const { token: rewardToken, amount: rewardAmount } = await getTokenAndAmount(farmConfig.rewardTokenName, farmConfig.rewardTokenAddress, farmConfig.rewardTokenAmount);
+    const { token: boostedToken, amount: boostedAmount } = await getTokenAndAmount(farmConfig.boosterTokenName, farmConfig.boosterTokenAddress, farmConfig.boosterTokenAmount);
 
-    var rewardToken;
-    var boostedToken;
-
-    if (farmConfig.rewardTokenName === 'WSEI'){
-        rewardToken = await hre.ethers.getContractAt('WSEI', farmConfig.rewardTokenAddress);
-        rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
-
-        await rewardToken.connect(impersonatedSigner).deposit({value: rewardAmount});
-    } else {
-        rewardToken = await hre.ethers.getContractAt('Token', farmConfig.rewardTokenAddress);
-        rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
+    if (farmConfig.rewardTokenName === 'WSEI') {
+        await rewardToken.connect(impersonatedSigner).deposit({ value: rewardAmount });
     }
-
-    if (farmConfig.boosterTokenName === 'WSEI'){
-        boostedToken = await hre.ethers.getContractAt('WSEI', farmConfig.boosterTokenAddress);
-        boostedAmount = ethers.utils.parseUnits(farmConfig.boosterTokenAmount, await boostedToken.decimals());
-
-        await rewardToken.connect(impersonatedSigner).deposit({value: rewardAmount});
-    } else {
-        boostedToken = await hre.ethers.getContractAt('Token', farmConfig.boosterTokenAddress);
-        boostedAmount = ethers.utils.parseUnits(farmConfig.boosterTokenAmount, await boostedToken.decimals());
+    
+    if (farmConfig.boosterTokenName === 'WSEI') {
+        await boostedToken.connect(impersonatedSigner).deposit({ value: boostedAmount });
     }
 
     const stakerBoostedFarmTx = await dragonswapStakerFactory.connect(impersonatedSigner).deployBoosted(

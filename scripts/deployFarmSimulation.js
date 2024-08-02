@@ -63,17 +63,15 @@ async function main() {
         console.log('Classic implementation set on factory');
     }
 
-    var rewardAmount;
-    var rewardToken;
+    let rewardAmount;
+    let rewardToken;
 
-    if (farmConfig.rewardTokenName === 'WSEI'){
-        rewardToken = await hre.ethers.getContractAt('WSEI', farmConfig.rewardTokenAddress);
-        rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
-        
-        await rewardToken.connect(impersonatedSigner).deposit({value: rewardAmount});
-    } else {
-        rewardToken = await hre.ethers.getContractAt('Token', farmConfig.rewardTokenAddress);
-        rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
+    const rewardTokenName = farmConfig.rewardTokenName === 'WSEI' ? 'WSEI' : 'Token';
+    rewardToken = await hre.ethers.getContractAt(rewardTokenName, farmConfig.rewardTokenAddress);
+    rewardAmount = ethers.utils.parseUnits(farmConfig.rewardTokenAmount, await rewardToken.decimals());
+
+    if (rewardTokenName === 'WSEI') {
+        await rewardToken.connect(impersonatedSigner).deposit({ value: rewardAmount });
     }
 
     const stakerFarmTx = await dragonswapStakerFactory.connect(impersonatedSigner).deployClassic(

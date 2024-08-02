@@ -20,8 +20,6 @@ async function getFarmConfig() {
     const startTimestamp = classicFarmSettings['startTimestamp'];
 
     return {
-        stakeTokenName,
-        rewardTokenName,
         stakeTokenAddress,
         rewardTokenAddress,
         rewardTokenAmount,

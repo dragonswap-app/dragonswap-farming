@@ -10,10 +10,5 @@
     "DragonswapStakerImplBoosted": "0x8F099C6D1eFB69de9Ed99cD5f125768E944427F8",
     "DragonswapStaker": "0x543abd1D6d7Be83A24552e6aA952686715115361",
     "DragonswapStakerBoosted": "0x988EAa617D692489191FbEA83Eef6541c0236e08"
-  },
-  "local": {
-    "DragonswapStakerFactory": "0x34975246B5a3c8e9E1C19BF9B6a6088b741d4E2D",
-    "DragonswapStakerImplClassic": "0xF1d1598c2C48a70D708537693c89d6D699a902cb",
-    "DragonswapStakerImplBoosted": "0x69D40C24552A9e6884345e5c9966363178c708dF"
   }
 }

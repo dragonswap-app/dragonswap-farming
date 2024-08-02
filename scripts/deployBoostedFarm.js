@@ -23,9 +23,6 @@ async function getFarmConfig() {
     const startTimestamp = boostedFarmSettings['startTimestamp'];
 
     return {
-        stakeTokenName,
-        rewardTokenName,
-        boosterTokenName,
         stakeTokenAddress,
         rewardTokenAddress,
         boosterTokenAddress,
