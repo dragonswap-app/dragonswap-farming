@@ -54,7 +54,7 @@
 **Add required tokens to `deployments/tokenConfig.json` under the `local` section**
 
 ### Step 3:
-**Ensure `DragonswapStakerFactory` contract address in `deployments/addresses.json` under `local` matches the one in the `mainnet` section**
+**Add `DragonswapStakerFactory` contract address in `deployments/addresses.json` under `local` section**
 
 ### Step 4:
 **Forking the current state of the chain:**
