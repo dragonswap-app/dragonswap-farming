@@ -11,23 +11,14 @@ async function getFarmConfig() {
     const classicFarmSettings = getJson(jsons.farmConfig)['classicFarmSettings'];
     const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name]; 
 
-    const stakeTokenName = classicFarmSettings['stakeTokenName'];
-    const rewardTokenName = classicFarmSettings['rewardTokenName'];
-
-    const stakeTokenAddress = tokenConfig[stakeTokenName];
-    const rewardTokenAddress = tokenConfig[rewardTokenName];
-    const rewardTokenAmount = classicFarmSettings['rewardTokenAmount'];
-    const rewardPerSecond = classicFarmSettings['rewardPerSecond'];
-    const startTimestamp = classicFarmSettings['startTimestamp'];
-
     return {
-        stakeTokenName,
-        rewardTokenName,
-        stakeTokenAddress,
-        rewardTokenAddress,
-        rewardTokenAmount,
-        rewardPerSecond,
-        startTimestamp
+        stakeTokenName: classicFarmSettings['stakeTokenName'],
+        rewardTokenName: classicFarmSettings['rewardTokenName'],
+        stakeTokenAddress: tokenConfig[classicFarmSettings['stakeTokenName']],
+        rewardTokenAddress: tokenConfig[classicFarmSettings['rewardTokenName']],
+        rewardTokenAmount: classicFarmSettings['rewardTokenAmount'],
+        rewardPerSecond: classicFarmSettings['rewardPerSecond'],
+        startTimestamp: classicFarmSettings['startTimestamp']
     };
 
 }

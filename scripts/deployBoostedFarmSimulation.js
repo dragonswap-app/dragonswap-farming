@@ -14,29 +14,17 @@ async function getFarmConfig() {
     const boostedFarmSettings = getJson(jsons.farmConfig)['boostedFarmSettings'];
     const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
-    const stakeTokenName = boostedFarmSettings['stakeTokenName'];
-    const rewardTokenName = boostedFarmSettings['rewardTokenName'];
-    const boosterTokenName = boostedFarmSettings['boosterTokenName'];
-
-    const stakeTokenAddress = tokenConfig[stakeTokenName];
-    const rewardTokenAddress = tokenConfig[rewardTokenName];
-    const boosterTokenAddress = tokenConfig[boosterTokenName];
-    const rewardTokenAmount = boostedFarmSettings['rewardTokenAmount'];
-    const boosterTokenAmount = boostedFarmSettings['boosterTokenAmount'];
-    const rewardPerSecond = boostedFarmSettings['rewardPerSecond'];
-    const startTimestamp = boostedFarmSettings['startTimestamp'];
-
     return {
-        stakeTokenName,
-        rewardTokenName,
-        boosterTokenName,
-        stakeTokenAddress,
-        rewardTokenAddress,
-        boosterTokenAddress,
-        rewardTokenAmount,
-        boosterTokenAmount,
-        rewardPerSecond,
-        startTimestamp
+        stakeTokenName: boostedFarmSettings['stakeTokenName'],
+        rewardTokenName: boostedFarmSettings['rewardTokenName'],
+        boosterTokenName: boostedFarmSettings['boosterTokenName'],
+        stakeTokenAddress: tokenConfig[boostedFarmSettings['stakeTokenName']],
+        rewardTokenAddress: tokenConfig[boostedFarmSettings['rewardTokenName']],
+        boosterTokenAddress: tokenConfig[boostedFarmSettings['boosterTokenName']],
+        rewardTokenAmount: boostedFarmSettings['rewardTokenAmount'],
+        boosterTokenAmount: boostedFarmSettings['boosterTokenAmount'],
+        rewardPerSecond: boostedFarmSettings['rewardPerSecond'],
+        startTimestamp: boostedFarmSettings['startTimestamp']
     };
 }
 
