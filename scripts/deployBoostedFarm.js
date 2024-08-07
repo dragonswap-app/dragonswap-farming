@@ -7,23 +7,23 @@ const wait = async () => {
   await sleep(3000);
 };
 
-async function getFarmConfig() {
-  const boostedFarmSettings = getJson(jsons.farmConfig)['boostedFarmSettings'];
+async function getBoostedFarmConfig() {
+  const boostedFarmConfig = getJson(jsons.farmConfig)['boostedFarmConfig'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
   return {
-    stakeTokenAddress: tokenConfig[boostedFarmSettings['stakeTokenName']],
-    rewardTokenAddress: tokenConfig[boostedFarmSettings['rewardTokenName']],
-    boosterTokenAddress: tokenConfig[boostedFarmSettings['boosterTokenName']],
-    rewardTokenAmount: boostedFarmSettings['rewardTokenAmount'],
-    boosterTokenAmount: boostedFarmSettings['boosterTokenAmount'],
-    rewardPerSecond: boostedFarmSettings['rewardPerSecond'],
-    startTimestamp: boostedFarmSettings['startTimestamp'],
+    stakeTokenAddress: tokenConfig[boostedFarmConfig['stakeTokenName']],
+    rewardTokenAddress: tokenConfig[boostedFarmConfig['rewardTokenName']],
+    boosterTokenAddress: tokenConfig[boostedFarmConfig['boosterTokenName']],
+    rewardTokenAmount: boostedFarmConfig['rewardTokenAmount'],
+    boosterTokenAmount: boostedFarmConfig['boosterTokenAmount'],
+    rewardPerSecond: boostedFarmConfig['rewardPerSecond'],
+    startTimestamp: boostedFarmConfig['startTimestamp'],
   };
 }
 
 async function main() {
-  const farmConfig = await getFarmConfig();
+  const boostedFarmConfig = await getBoostedFarmConfig();
 
   const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[
     hre.network.name
@@ -59,27 +59,27 @@ async function main() {
 
   const rewardToken = await hre.ethers.getContractAt(
     'Token',
-    farmConfig.rewardTokenAddress
+    boostedFarmConfig.rewardTokenAddress
   );
   const boostedToken = await hre.ethers.getContractAt(
     'Token',
-    farmConfig.boosterTokenAddress
+    boostedFarmConfig.boosterTokenAddress
   );
 
   const rewardAmount = ethers.utils.parseUnits(
-    farmConfig.rewardTokenAmount,
+    boostedFarmConfig.rewardTokenAmount,
     await rewardToken.decimals()
   );
   const boostedAmount = ethers.utils.parseUnits(
-    farmConfig.boosterTokenAmount,
+    boostedFarmConfig.boosterTokenAmount,
     await boostedToken.decimals()
   );
 
   const stakerBoostedFarmTx = await dragonswapStakerFactory.deployBoosted(
-    farmConfig.rewardTokenAddress,
-    farmConfig.boosterTokenAddress,
-    farmConfig.rewardPerSecond,
-    farmConfig.startTimestamp
+    boostedFarmConfig.rewardTokenAddress,
+    boostedFarmConfig.boosterTokenAddress,
+    boostedFarmConfig.rewardPerSecond,
+    boostedFarmConfig.startTimestamp
   );
 
   const stakerBoostedFarmTxReceipt = await stakerBoostedFarmTx.wait();
@@ -100,7 +100,7 @@ async function main() {
 
   await wait();
 
-  await stakerBoostedFarm.add(100, farmConfig.stakeTokenAddress, false);
+  await stakerBoostedFarm.add(100, boostedFarmConfig.stakeTokenAddress, false);
 
   console.log('Added pool to stakerBoosted farm');
 

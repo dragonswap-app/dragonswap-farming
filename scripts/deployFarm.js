@@ -7,21 +7,21 @@ const wait = async () => {
   await sleep(3000);
 };
 
-async function getFarmConfig() {
-  const classicFarmSettings = getJson(jsons.farmConfig)['classicFarmSettings'];
+async function getClassicFarmConfig() {
+  const classicFarmConfig = getJson(jsons.farmConfig)['classicFarmConfig'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
   return {
-    stakeTokenAddress: tokenConfig[classicFarmSettings['stakeTokenName']],
-    rewardTokenAddress: tokenConfig[classicFarmSettings['rewardTokenName']],
-    rewardTokenAmount: classicFarmSettings['rewardTokenAmount'],
-    rewardPerSecond: classicFarmSettings['rewardPerSecond'],
-    startTimestamp: classicFarmSettings['startTimestamp'],
+    stakeTokenAddress: tokenConfig[classicFarmConfig['stakeTokenName']],
+    rewardTokenAddress: tokenConfig[classicFarmConfig['rewardTokenName']],
+    rewardTokenAmount: classicFarmConfig['rewardTokenAmount'],
+    rewardPerSecond: classicFarmConfig['rewardPerSecond'],
+    startTimestamp: classicFarmConfig['startTimestamp'],
   };
 }
 
 async function main() {
-  const farmConfig = await getFarmConfig();
+  const classicFarmConfig = await getClassicFarmConfig();
 
   const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[
     hre.network.name
@@ -54,18 +54,18 @@ async function main() {
 
   const rewardToken = await hre.ethers.getContractAt(
     'Token',
-    farmConfig.rewardTokenAddress
+    classicFarmConfig.rewardTokenAddress
   );
 
   const rewardAmount = ethers.utils.parseUnits(
-    farmConfig.rewardTokenAmount,
+    classicFarmConfig.rewardTokenAmount,
     await rewardToken.decimals()
   );
 
   const stakerFarmTx = await dragonswapStakerFactory.deployClassic(
-    farmConfig.rewardTokenAddress,
-    farmConfig.rewardPerSecond,
-    farmConfig.startTimestamp
+    classicFarmConfig.rewardTokenAddress,
+    classicFarmConfig.rewardPerSecond,
+    classicFarmConfig.startTimestamp
   );
 
   const stakerFarmTxReceipt = await stakerFarmTx.wait();
@@ -86,7 +86,7 @@ async function main() {
 
   await wait();
 
-  await stakerFarm.add(100, farmConfig.stakeTokenAddress, false);
+  await stakerFarm.add(100, classicFarmConfig.stakeTokenAddress, false);
 
   console.log('Staking pool added');
 

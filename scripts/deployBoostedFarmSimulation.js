@@ -9,20 +9,20 @@ async function getTokenAndAmount(tokenName, tokenAddress, tokenAmount) {
   return { token, amount };
 }
 
-async function getFarmConfig() {
-  const boostedFarmSettings = getJson(jsons.farmConfig)['boostedFarmSettings'];
+async function getBoostedFarmConfig() {
+  const boostedFarmConfig = getJson(jsons.farmConfig)['boostedFarmConfig'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
   return {
-    rewardTokenName: boostedFarmSettings['rewardTokenName'],
-    boosterTokenName: boostedFarmSettings['boosterTokenName'],
-    stakeTokenAddress: tokenConfig[boostedFarmSettings['stakeTokenName']],
-    rewardTokenAddress: tokenConfig[boostedFarmSettings['rewardTokenName']],
-    boosterTokenAddress: tokenConfig[boostedFarmSettings['boosterTokenName']],
-    rewardTokenAmount: boostedFarmSettings['rewardTokenAmount'],
-    boosterTokenAmount: boostedFarmSettings['boosterTokenAmount'],
-    rewardPerSecond: boostedFarmSettings['rewardPerSecond'],
-    startTimestamp: boostedFarmSettings['startTimestamp'],
+    rewardTokenName: boostedFarmConfig['rewardTokenName'],
+    boosterTokenName: boostedFarmConfig['boosterTokenName'],
+    stakeTokenAddress: tokenConfig[boostedFarmConfig['stakeTokenName']],
+    rewardTokenAddress: tokenConfig[boostedFarmConfig['rewardTokenName']],
+    boosterTokenAddress: tokenConfig[boostedFarmConfig['boosterTokenName']],
+    rewardTokenAmount: boostedFarmConfig['rewardTokenAmount'],
+    boosterTokenAmount: boostedFarmConfig['boosterTokenAmount'],
+    rewardPerSecond: boostedFarmConfig['rewardPerSecond'],
+    startTimestamp: boostedFarmConfig['startTimestamp'],
   };
 }
 
@@ -36,7 +36,7 @@ async function main() {
 
   const impersonatedSigner = await ethers.getImpersonatedSigner(ownerAddress);
 
-  const farmConfig = await getFarmConfig();
+  const boostedFarmConfig = await getBoostedFarmConfig();
 
   const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[
     hre.network.name
@@ -71,24 +71,24 @@ async function main() {
   }
 
   const { token: rewardToken, amount: rewardAmount } = await getTokenAndAmount(
-    farmConfig.rewardTokenName,
-    farmConfig.rewardTokenAddress,
-    farmConfig.rewardTokenAmount
+    boostedFarmConfig.rewardTokenName,
+    boostedFarmConfig.rewardTokenAddress,
+    boostedFarmConfig.rewardTokenAmount
   );
   const { token: boostedToken, amount: boostedAmount } =
     await getTokenAndAmount(
-      farmConfig.boosterTokenName,
-      farmConfig.boosterTokenAddress,
-      farmConfig.boosterTokenAmount
+      boostedFarmConfig.boosterTokenName,
+      boostedFarmConfig.boosterTokenAddress,
+      boostedFarmConfig.boosterTokenAmount
     );
 
-  if (farmConfig.rewardTokenName === 'WSEI') {
+  if (boostedFarmConfig.rewardTokenName === 'WSEI') {
     await rewardToken
       .connect(impersonatedSigner)
       .deposit({ value: rewardAmount });
   }
 
-  if (farmConfig.boosterTokenName === 'WSEI') {
+  if (boostedFarmConfig.boosterTokenName === 'WSEI') {
     await boostedToken
       .connect(impersonatedSigner)
       .deposit({ value: boostedAmount });
@@ -97,10 +97,10 @@ async function main() {
   const stakerBoostedFarmTx = await dragonswapStakerFactory
     .connect(impersonatedSigner)
     .deployBoosted(
-      farmConfig.rewardTokenAddress,
-      farmConfig.boosterTokenAddress,
-      farmConfig.rewardPerSecond,
-      farmConfig.startTimestamp
+      boostedFarmConfig.rewardTokenAddress,
+      boostedFarmConfig.boosterTokenAddress,
+      boostedFarmConfig.rewardPerSecond,
+      boostedFarmConfig.startTimestamp
     );
 
   const stakerBoostedFarmTxReceipt = await stakerBoostedFarmTx.wait();
@@ -116,7 +116,7 @@ async function main() {
 
   await stakerBoostedFarm
     .connect(impersonatedSigner)
-    .add(100, farmConfig.stakeTokenAddress, false);
+    .add(100, boostedFarmConfig.stakeTokenAddress, false);
 
   console.log('Added pool to stakerBoosted farm');
 
