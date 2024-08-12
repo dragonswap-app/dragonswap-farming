@@ -9,7 +9,7 @@ async function getTokenAndAmount(tokenName, tokenAddress, tokenAmount) {
   return { token, amount };
 }
 
-async function getBoostedFarmConfig() {
+function getBoostedFarmConfig() {
   const boostedFarmConfig = getJson(jsons.farmConfig)['boostedFarmConfig'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
@@ -36,7 +36,7 @@ async function main() {
 
   const impersonatedSigner = await ethers.getImpersonatedSigner(ownerAddress);
 
-  const boostedFarmConfig = await getBoostedFarmConfig();
+  const boostedFarmConfig = getBoostedFarmConfig();
 
   const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[
     hre.network.name

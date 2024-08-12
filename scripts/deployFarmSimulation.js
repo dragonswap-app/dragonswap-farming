@@ -7,7 +7,7 @@ const wait = async () => {
   await sleep(3000);
 };
 
-async function getClassicFarmConfig() {
+function getClassicFarmConfig() {
   const classicFarmConfig = getJson(jsons.farmConfig)['classicFarmConfig'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
@@ -26,7 +26,7 @@ async function main() {
 
   const impersonatedSigner = await ethers.getImpersonatedSigner(ownerAddress);
 
-  const classicFarmConfig = await getClassicFarmConfig();
+  const classicFarmConfig = getClassicFarmConfig();
 
   const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[
     hre.network.name

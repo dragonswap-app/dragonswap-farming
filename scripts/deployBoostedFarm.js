@@ -7,7 +7,7 @@ const wait = async () => {
   await sleep(3000);
 };
 
-async function getBoostedFarmConfig() {
+function getBoostedFarmConfig() {
   const boostedFarmConfig = getJson(jsons.farmConfig)['boostedFarmConfig'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
@@ -23,7 +23,7 @@ async function getBoostedFarmConfig() {
 }
 
 async function main() {
-  const boostedFarmConfig = await getBoostedFarmConfig();
+  const boostedFarmConfig = getBoostedFarmConfig();
 
   const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[
     hre.network.name

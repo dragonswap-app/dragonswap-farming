@@ -7,7 +7,7 @@ const wait = async () => {
   await sleep(3000);
 };
 
-async function getClassicFarmConfig() {
+function getClassicFarmConfig() {
   const classicFarmConfig = getJson(jsons.farmConfig)['classicFarmConfig'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
@@ -21,7 +21,7 @@ async function getClassicFarmConfig() {
 }
 
 async function main() {
-  const classicFarmConfig = await getClassicFarmConfig();
+  const classicFarmConfig = getClassicFarmConfig();
 
   const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[
     hre.network.name
