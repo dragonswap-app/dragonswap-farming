@@ -1,0 +1,18 @@
+{
+    "classicFarmConfig":{
+      "stakeTokenName": "SEI-SEIYAN",
+      "rewardTokenName": "WSEI",
+      "rewardTokenAmount": "141643",
+      "rewardPerSecond": "52883437873357228",
+      "startTimestamp": "1722531600"
+    },
+    "boostedFarmConfig":{
+      "stakeTokenName": "SEI-FXS",
+      "rewardTokenName": "WSEI",
+      "boosterTokenName": "FXS",
+      "rewardTokenAmount": "9400",
+      "boosterTokenAmount": "1461",
+      "rewardPerSecond": "1783545840922890",
+      "startTimestamp": "1722531600"
+    }
+}  

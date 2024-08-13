@@ -12,6 +12,7 @@ function getClassicFarmConfig() {
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
   return {
+    rewardTokenName: classicFarmConfig['rewardTokenName'],
     stakeTokenAddress: tokenConfig[classicFarmConfig['stakeTokenName']],
     rewardTokenAddress: tokenConfig[classicFarmConfig['rewardTokenName']],
     rewardTokenAmount: classicFarmConfig['rewardTokenAmount'],
@@ -21,6 +22,10 @@ function getClassicFarmConfig() {
 }
 
 async function main() {
+  const ownerAddress = process.env.OWNER_ADDRESS;
+
+  const impersonatedSigner = await ethers.getImpersonatedSigner(ownerAddress);
+
   const classicFarmConfig = getClassicFarmConfig();
 
   const dragonswapStakerFactoryAddress = getJson(jsons.addresses)[
@@ -35,7 +40,9 @@ async function main() {
   if ((await dragonswapStakerFactory.implClassic()) === ZERO_ADDRESS) {
     const stakerFarmImplFactory =
       await hre.ethers.getContractFactory('DragonswapStaker');
-    const stakerFarmImplClassic = await stakerFarmImplFactory.deploy();
+    const stakerFarmImplClassic = await stakerFarmImplFactory
+      .connect(impersonatedSigner)
+      .deploy();
     await stakerFarmImplClassic.deployed();
     console.log(`DragonswapStaker address: ${stakerFarmImplClassic.address}`);
 
@@ -46,27 +53,39 @@ async function main() {
       stakerFarmImplClassic.address
     );
 
-    await dragonswapStakerFactory.setImplementationClassic(
-      stakerFarmImplClassic.address
-    );
+    await dragonswapStakerFactory
+      .connect(impersonatedSigner)
+      .setImplementationClassic(stakerFarmImplClassic.address);
     console.log('Classic implementation set on factory');
   }
 
-  const rewardToken = await hre.ethers.getContractAt(
-    'Token',
+  let rewardAmount;
+  let rewardToken;
+
+  const rewardTokenName =
+    classicFarmConfig.rewardTokenName === 'WSEI' ? 'WSEI' : 'Token';
+  rewardToken = await hre.ethers.getContractAt(
+    rewardTokenName,
     classicFarmConfig.rewardTokenAddress
   );
-
-  const rewardAmount = ethers.utils.parseUnits(
+  rewardAmount = ethers.utils.parseUnits(
     classicFarmConfig.rewardTokenAmount,
     await rewardToken.decimals()
   );
 
-  const stakerFarmTx = await dragonswapStakerFactory.deployClassic(
-    classicFarmConfig.rewardTokenAddress,
-    classicFarmConfig.rewardPerSecond,
-    classicFarmConfig.startTimestamp
-  );
+  if (rewardTokenName === 'WSEI') {
+    await rewardToken
+      .connect(impersonatedSigner)
+      .deposit({ value: rewardAmount });
+  }
+
+  const stakerFarmTx = await dragonswapStakerFactory
+    .connect(impersonatedSigner)
+    .deployClassic(
+      classicFarmConfig.rewardTokenAddress,
+      classicFarmConfig.rewardPerSecond,
+      classicFarmConfig.startTimestamp
+    );
 
   const stakerFarmTxReceipt = await stakerFarmTx.wait();
 
@@ -75,32 +94,28 @@ async function main() {
     stakerFarmTxReceipt.logs[0].address
   );
 
-  saveJson(
-    jsons.addresses,
-    hre.network.name,
-    'DragonswapStaker',
-    stakerFarm.address
-  );
-
   console.log('Staker farm address: ', stakerFarm.address);
 
   await wait();
 
-  await stakerFarm.add(100, classicFarmConfig.stakeTokenAddress, false);
+  await stakerFarm
+    .connect(impersonatedSigner)
+    .add(100, classicFarmConfig.stakeTokenAddress, false);
 
   console.log('Staking pool added');
 
-  await rewardToken.approve(stakerFarm.address, rewardAmount);
+  await rewardToken
+    .connect(impersonatedSigner)
+    .approve(stakerFarm.address, rewardAmount);
 
   await wait();
-
-  await stakerFarm.fund(rewardAmount);
+  await stakerFarm.connect(impersonatedSigner).fund(rewardAmount);
   console.log('Funded staker farm');
 
   console.log(`
       Start: ${await stakerFarm.startTimestamp()}
       End: ${await stakerFarm.endTimestamp()}
-    `);
+      `);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

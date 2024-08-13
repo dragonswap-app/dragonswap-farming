@@ -44,13 +44,27 @@ module.exports = {
     artifacts: './artifacts',
   },
   solidity: {
-    version: '0.8.25',
-    settings: {
-      evmVersion: 'paris',
-      optimizer: {
-        enabled: true,
-        runs: 99999,
+    compilers: [
+      {
+        version: '0.8.25',
+        settings: {
+          evmVersion: 'paris',
+          optimizer: {
+            enabled: true,
+            runs: 99999,
+          },
+        },
       },
-    },
+      {
+        version: '0.5.16',
+        settings: {
+          evmVersion: 'istanbul',
+          optimizer: {
+            enabled: true,
+            runs: 99999,
+          },
+        },
+      },
+    ],
   },
 };
