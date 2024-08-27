@@ -8,7 +8,7 @@ const wait = async () => {
 };
 
 function getClassicFarmConfig() {
-  const classicFarmConfig = getJson(jsons.farmConfig)['classicFarmConfig'];
+  const classicFarmConfig = getJson(jsons.farmConfig)['classicFarmConfig2'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
   return {
@@ -96,6 +96,8 @@ async function main() {
 
   await stakerFarm.fund(rewardAmount);
   console.log('Funded staker farm');
+
+  await wait();
 
   console.log(`
       Start: ${await stakerFarm.startTimestamp()}
