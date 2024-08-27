@@ -1,9 +1,9 @@
 {
     "classicFarmConfig":{
       "stakeTokenName": "iSEI-USDC",
-      "rewardTokenName": "WSEI",
+      "rewardTokenName": "iSEI",
       "rewardTokenAmount": "153000",
-      "rewardPerSecond": "35416666666666666",
+      "rewardPerSecond": "35416",
       "startTimestamp": "1724950800"
     },
     "boostedFarmConfig":{
