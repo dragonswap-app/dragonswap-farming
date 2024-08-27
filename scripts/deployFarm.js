@@ -8,7 +8,7 @@ const wait = async () => {
 };
 
 function getClassicFarmConfig() {
-  const classicFarmConfig = getJson(jsons.farmConfig)['classicFarmConfig2'];
+  const classicFarmConfig = getJson(jsons.farmConfig)['classicFarmConfig'];
   const tokenConfig = getJson(jsons.tokenConfig)[hre.network.name];
 
   return {
