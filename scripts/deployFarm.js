@@ -75,13 +75,6 @@ async function main() {
     stakerFarmTxReceipt.logs[0].address
   );
 
-  saveJson(
-    jsons.addresses,
-    hre.network.name,
-    'DragonswapStaker',
-    stakerFarm.address
-  );
-
   console.log('Staker farm address: ', stakerFarm.address);
 
   await wait();
