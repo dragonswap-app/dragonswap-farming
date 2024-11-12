@@ -1,10 +1,10 @@
 {
     "classicFarmConfig":{
-      "stakeTokenName": "SEI-USDC",
-      "rewardTokenName": "WSEI",
-      "rewardTokenAmount": "153965",
-      "rewardPerSecond": "89100115740740740",
-      "startTimestamp": "1726653600"
+      "stakeTokenName": "SEI-POPO",
+      "rewardTokenName": "POPO",
+      "rewardTokenAmount": "3600000000",
+      "rewardPerSecond": "2976190476190476190476",
+      "startTimestamp": "1731405600"
     },
     "boostedFarmConfig":{
       "stakeTokenName": "SEI-PEPEI",
