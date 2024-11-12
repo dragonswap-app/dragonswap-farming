@@ -4,7 +4,7 @@
       "rewardTokenName": "POPO",
       "rewardTokenAmount": "3600000000",
       "rewardPerSecond": "2976190476190476190476",
-      "startTimestamp": "1731405600"
+      "startTimestamp": "1731409200"
     },
     "boostedFarmConfig":{
       "stakeTokenName": "SEI-PEPEI",
