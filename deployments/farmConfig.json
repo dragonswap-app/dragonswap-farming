@@ -1,10 +1,10 @@
 {
     "classicFarmConfig":{
-      "stakeTokenName": "SEI-POPO",
-      "rewardTokenName": "POPO",
-      "rewardTokenAmount": "3600000000",
-      "rewardPerSecond": "2976190476190476190476",
-      "startTimestamp": "1731409200"
+      "stakeTokenName": "SEI-SHENRN",
+      "rewardTokenName": "SHENRN",
+      "rewardTokenAmount": "7777777",
+      "rewardPerSecond": "6430040",
+      "startTimestamp": "1731945600"
     },
     "boostedFarmConfig":{
       "stakeTokenName": "SEI-PEPEI",
