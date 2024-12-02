@@ -7,12 +7,21 @@
       "startTimestamp": "1731945600"
     },
     "boostedFarmConfig":{
-      "stakeTokenName": "SEI-PEPEI",
-      "rewardTokenName": "PEPEI",
+      "stakeTokenName": "SEI-SHENRN",
+      "rewardTokenName": "SHENRN",
       "boosterTokenName": "WSEI",
-      "rewardTokenAmount": "75000000",
-      "boosterTokenAmount": "3000",
-      "rewardPerSecond": "62003968253968253968",
-      "startTimestamp": "1730998800"
+      "rewardTokenAmount": "14141414",
+      "boosterTokenAmount": "1000",
+      "rewardPerSecond": "2774131",
+      "startTimestamp": "1733011200"
+    },
+    "boostedFarmConfig1":{
+      "stakeTokenName": "SEI-SPEX",
+      "rewardTokenName": "SPEX",
+      "boosterTokenName": "WSEI",
+      "rewardTokenAmount": "200000000",
+      "boosterTokenAmount": "1000",
+      "rewardPerSecond": "85601780",
+      "startTimestamp": "1733094000"
     }
 }  
