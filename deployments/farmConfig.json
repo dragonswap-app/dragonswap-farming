@@ -28,9 +28,9 @@
       "stakeTokenName": "SEI-DRG",
       "rewardTokenName": "USDC",
       "boosterTokenName": "DRG",
-      "rewardTokenAmount": "15000",
-      "boosterTokenAmount": "170000",
-      "rewardPerSecond": "11574",
+      "rewardTokenAmount": "10000",
+      "boosterTokenAmount": "340000",
+      "rewardPerSecond": "007716",
       "startTimestamp": "1752001200"
     }
 }
