@@ -6,6 +6,15 @@
       "rewardPerSecond": "6430040",
       "startTimestamp": "1731945600"
     },
+    "boostedFarmConfig3":{
+      "stakeTokenName": "SEI-DRG",
+      "rewardTokenName": "USDC",
+      "boosterTokenName": "DRG",
+      "rewardTokenAmount": "10000",
+      "boosterTokenAmount": "340000",
+      "rewardPerSecond": "007716",
+      "startTimestamp": "1752001200"
+    },
     "boostedFarmConfig2":{
       "stakeTokenName": "SEI-SHENRN",
       "rewardTokenName": "SHENRN",
@@ -25,12 +34,12 @@
       "startTimestamp": "1733094000"
     },
     "boostedFarmConfig":{
-      "stakeTokenName": "SEI-DRG",
-      "rewardTokenName": "USDC",
+      "stakeTokenName": "SEI-MILLI",
+      "rewardTokenName": "MILLI",
       "boosterTokenName": "DRG",
-      "rewardTokenAmount": "10000",
-      "boosterTokenAmount": "340000",
-      "rewardPerSecond": "007716",
-      "startTimestamp": "1752001200"
+      "rewardTokenAmount": "172000000",
+      "boosterTokenAmount": "20000",
+      "rewardPerSecond": "199074074",
+      "startTimestamp": "1752588000"
     }
 }
