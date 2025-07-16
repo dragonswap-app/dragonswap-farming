@@ -33,7 +33,7 @@
       "rewardPerSecond": "85601780",
       "startTimestamp": "1733094000"
     },
-    "boostedFarmConfig":{
+    "boostedFarmConfig4":{
       "stakeTokenName": "SEI-MILLI",
       "rewardTokenName": "MILLI",
       "boosterTokenName": "DRG",
@@ -41,5 +41,14 @@
       "boosterTokenAmount": "20000",
       "rewardPerSecond": "199074074",
       "startTimestamp": "1752580800"
+    },
+    "boostedFarmConfig":{
+      "stakeTokenName": "USDC-APO",
+      "rewardTokenName": "APO",
+      "boosterTokenName": "DRG",
+      "rewardTokenAmount": "10000",
+      "boosterTokenAmount": "10000",
+      "rewardPerSecond": "8267195767195767",
+      "startTimestamp": "1752750000"
     }
 }
