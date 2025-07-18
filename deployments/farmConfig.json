@@ -42,7 +42,7 @@
       "rewardPerSecond": "199074074",
       "startTimestamp": "1752580800"
     },
-    "boostedFarmConfig":{
+    "boostedFarmConfig5":{
       "stakeTokenName": "USDC-APO",
       "rewardTokenName": "APO",
       "boosterTokenName": "DRG",
@@ -50,5 +50,14 @@
       "boosterTokenAmount": "10000",
       "rewardPerSecond": "8267195767195767",
       "startTimestamp": "1752750000"
+    },
+    "boostedFarmConfig":{
+      "stakeTokenName": "SEI-CHIPS",
+      "rewardTokenName": "CHIPS",
+      "boosterTokenName": "DRG",
+      "rewardTokenAmount": "7860000",
+      "boosterTokenAmount": "12500",
+      "rewardPerSecond": "3032407",
+      "startTimestamp": "1752922800"
     }
 }
