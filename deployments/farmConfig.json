@@ -51,13 +51,22 @@
       "rewardPerSecond": "8267195767195767",
       "startTimestamp": "1752750000"
     },
-    "boostedFarmConfig":{
+    "boostedFarmConfig6":{
       "stakeTokenName": "SEI-CHIPS",
       "rewardTokenName": "CHIPS",
       "boosterTokenName": "DRG",
       "rewardTokenAmount": "7860000",
       "boosterTokenAmount": "12500",
       "rewardPerSecond": "3032407",
+      "startTimestamp": "1752922800"
+    },
+    "boostedFarmConfig":{
+      "stakeTokenName": "SEI-SBC",
+      "rewardTokenName": "SBC",
+      "boosterTokenName": "DRG",
+      "rewardTokenAmount": "4000100",
+      "boosterTokenAmount": "3500",
+      "rewardPerSecond": "3086496913580246913",
       "startTimestamp": "1752922800"
     }
 }
