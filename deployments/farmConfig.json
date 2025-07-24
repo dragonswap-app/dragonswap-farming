@@ -60,7 +60,7 @@
       "rewardPerSecond": "3032407",
       "startTimestamp": "1752922800"
     },
-    "boostedFarmConfig":{
+    "boostedFarmConfig7":{
       "stakeTokenName": "SEI-SBC",
       "rewardTokenName": "SBC",
       "boosterTokenName": "DRG",
@@ -68,5 +68,14 @@
       "boosterTokenAmount": "3500",
       "rewardPerSecond": "3086496913580246913",
       "startTimestamp": "1753192800"
+    },
+    "boostedFarmConfig":{
+      "stakeTokenName": "SEI-DRG",
+      "rewardTokenName": "USDC",
+      "boosterTokenName": "DRG",
+      "rewardTokenAmount": "12000",
+      "boosterTokenAmount": "218181",
+      "rewardPerSecond": "4629",
+      "startTimestamp": "1753347600"
     }
 }
