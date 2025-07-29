@@ -78,7 +78,7 @@
       "rewardPerSecond": "4629",
       "startTimestamp": "1753351200"
     },
-    "boostedFarmConfig":{
+    "boostedFarmConfig9":{
       "stakeTokenName": "SEI-GGC",
       "rewardTokenName": "GGC",
       "boosterTokenName": "DRG",
@@ -87,7 +87,7 @@
       "rewardPerSecond": "138888888888888888",
       "startTimestamp": "1753794000"
     },
-    "boostedFarmConfigNext":{
+    "boostedFarmConfig":{
       "stakeTokenName": "SEI-WILSON",
       "rewardTokenName": "WILSON",
       "boosterTokenName": "DRG",
